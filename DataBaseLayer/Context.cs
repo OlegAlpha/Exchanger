@@ -7,9 +7,10 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace DataBaseLayer;
-internal class Context: DbContext
+public class Context: DbContext
 {
     public DbSet<ExchangeStory> exchangeStories { get; set; }
+    public DbSet<ExchangeRate> ExchangeRates { get; set; }
 
     public Context()
     {
