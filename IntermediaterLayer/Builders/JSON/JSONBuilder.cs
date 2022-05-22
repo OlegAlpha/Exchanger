@@ -23,7 +23,9 @@ public class JSONBuilder
             result = result.AddJSONComponent(component);
         }
 
-        return new StringBuilder(result);
+        result = result.Substring(0, result.Length - 1);
+
+        return new StringBuilder(string.Concat('{',result,'}'));
     }
 
 

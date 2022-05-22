@@ -27,7 +27,8 @@ public static class StringExtend
 
         StringBuilder result = new StringBuilder(source ?? "");
         string left = WrapComponent(component.Name);
-        string right = WrapComponentsGroup(component.Data.ToString());
+        string right = component.Data.Remove(component.Data.Length - 2, 1).ToString();
+        right = WrapComponentsGroup(right);
 
         result = result.AppendJSONElement(left, right);
 

@@ -16,6 +16,7 @@ internal static class StringBuilderExtend
         source = source.Append(colon);
         source = source.Append(right);
         source = source.Append(coma);
+        source = source.AppendLine();
 
         return source;    
     }

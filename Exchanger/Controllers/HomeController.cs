@@ -44,7 +44,7 @@ public class HomeController : Controller
 
         return response.Build().ToString();
     }
-    public string Exchange(int UserId, decimal amount, string from, string to)
+    public IActionResult Exchange(int UserId, decimal amount, string from, string to)
     {
         decimal result = 0;
         ExchangeRate exchangeRate = new ExchangeRate();
@@ -73,7 +73,7 @@ public class HomeController : Controller
         info.AddComponent("rate", exchangeRate?.Rate.ToString());
         response.AddComponent("rate", exchangeRate?.Rate.ToString());
 
-        return response.Build().ToString();
+        return Ok(response.Build().ToString());
     }
     public string Fluctuation(DateTime start, DateTime end, string baseCurrency, params string[] currencies)
     {
