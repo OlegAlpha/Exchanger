@@ -11,6 +11,8 @@ using System.Threading.Tasks;
 namespace IntermediateLayer.BussinesLogic.RequestProcess;
 public class Converter
 {
+    private double LimitedPeriod = 1;
+    private double maxCountInPeriod = 10;
     private void AddToStory(int UserId, decimal amount, ExchangeRate exchangeRate)
     {
         if (!StaticObjects.Stories.ContainsKey(UserId))
@@ -33,7 +35,7 @@ public class Converter
     private bool CheckCountExchanges(int userId)
     {
         IEnumerable<LocalExchangeStory> story
-            = StaticObjects.Stories[userId].ExchangeStories.Where(story => (DateTime.UtcNow - story.Created).Hours >= 1);
+            = StaticObjects.Stories[userId].ExchangeStories.Where(story => (DateTime.UtcNow - story.Created).Hours >= LimitedPeriod);
 
         if(story is null)
         {
@@ -45,7 +47,7 @@ public class Converter
             StaticObjects.Stories[userId].ExchangeStories.Remove(storyItem);
         }
 
-        if (StaticObjects.Stories[userId].ExchangeStories.Count() > 10)
+        if (StaticObjects.Stories[userId].ExchangeStories.Count() > maxCountInPeriod)
         {
             throw new Exception("Too much exchanges");
         }
