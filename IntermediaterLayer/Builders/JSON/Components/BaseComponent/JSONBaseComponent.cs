@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace IntermediateLayer.Builders.JSON.Components.BaseInterface;
-public abstract class JSONBaseComponent
+public class JSONBaseComponent
 {
     public string Name { get; }
     public StringBuilder Data { get; protected set; }
