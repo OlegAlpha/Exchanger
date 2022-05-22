@@ -9,7 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace IntermediateLayer.Models;
-internal class UserStory
+public class UserStory
 {
     public int Id { get; }
     public ObservableCollection<LocalExchangeStory> ExchangeStories { get; set; }

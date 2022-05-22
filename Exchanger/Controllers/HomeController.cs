@@ -3,8 +3,11 @@ using IntermediateLayer.Builders.JSON;
 using IntermediateLayer.Builders.JSON.Components;
 using IntermediateLayer.Builders.JSON.Components.BaseInterface;
 using IntermediateLayer.BussinesLogic.RequestProcess;
+using IntermediateLayer.Models.LocalivesAlternatives;
+using IntermediateLayer.Models.StaticObjects;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
+using System.Linq;
 
 namespace Exchanger.Controllers;
 public class HomeController : Controller
@@ -44,8 +47,10 @@ public class HomeController : Controller
 
         return response.Build().ToString();
     }
-    public IActionResult Exchange(int UserId, decimal amount, string from, string to)
+    public string Exchange(int UserId, decimal amount, string from, string to)
     {
+
+
         decimal result = 0;
         ExchangeRate exchangeRate = new ExchangeRate();
         Stopwatch stopwatch = new Stopwatch();
@@ -54,6 +59,8 @@ public class HomeController : Controller
         stopwatch.Start();
         try
         {
+
+
             exchangeRate = informator.GetExchangeRate(from, to);
             result = converter.Exchange(UserId, amount, exchangeRate);
         }
@@ -73,7 +80,7 @@ public class HomeController : Controller
         info.AddComponent("rate", exchangeRate?.Rate.ToString());
         response.AddComponent("rate", exchangeRate?.Rate.ToString());
 
-        return Ok(response.Build().ToString());
+        return response.Build().ToString();
     }
     public string Fluctuation(DateTime start, DateTime end, string baseCurrency, params string[] currencies)
     {
@@ -148,7 +155,7 @@ public class HomeController : Controller
         stopwatch.Stop();
 
         InfoComponent info = new InfoComponent(stopwatch.ElapsedMilliseconds);
-        ExchangeResponse response = new ExchangeResponse( DateTime.UtcNow.Date, info, isSuccess);
+        ExchangeResponse response = new ExchangeResponse(DateTime.UtcNow.Date, info, isSuccess);
 
         info.AddComponent("base", baseCurrency);
         info.AddComponent("start_date", start.ToString());
@@ -159,5 +166,5 @@ public class HomeController : Controller
 
         return response.Build().ToString();
     }
-    
+
 }

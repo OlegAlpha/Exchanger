@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace IntermediateLayer.Models.StaticObjects;
-internal static class StaticObjects
+public static class StaticObjects
 {
     public static Context Context { get; } = new Context();
     public static Dictionary<int, UserStory> Stories { get; } = new Dictionary<int, UserStory>();

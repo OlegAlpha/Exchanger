@@ -30,7 +30,30 @@ public class Converter
         StaticObjects.Stories[UserId].ExchangeStories.Add(story);
     }
 
-    public decimal Exchange(int UserId, decimal amount, ExchangeRate rate)
+    private bool CheckCountExchanges(int userId)
+    {
+        IEnumerable<LocalExchangeStory> story
+            = StaticObjects.Stories[userId].ExchangeStories.Where(story => (DateTime.UtcNow - story.Created).Hours >= 1);
+
+        if(story is null)
+        {
+            return true;
+        }
+
+        foreach (LocalExchangeStory storyItem in story)
+        {
+            StaticObjects.Stories[userId].ExchangeStories.Remove(storyItem);
+        }
+
+        if (StaticObjects.Stories[userId].ExchangeStories.Count() > 10)
+        {
+            throw new Exception("Too much exchanges");
+        }
+
+        return true;
+    }
+
+    public decimal Exchange(int userId, decimal amount, ExchangeRate rate)
     {
         if (amount < 0)
         {
@@ -38,10 +61,12 @@ public class Converter
             throw new ArgumentException(message);
         }
 
+        CheckCountExchanges(userId);
+
         decimal result;
 
         result = rate.Rate * amount;
-        AddToStory(UserId, amount, rate);
+        AddToStory(userId, amount, rate);
 
         return result;
     }

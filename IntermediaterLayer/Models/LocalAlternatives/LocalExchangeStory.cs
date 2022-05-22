@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using DataBaseLayer.Entities;
 
 namespace IntermediateLayer.Models.LocalivesAlternatives;
-internal class LocalExchangeStory
+public class LocalExchangeStory
 {
     public decimal Amount { get; set; }
     public ExchangeRate Rate { get; set; }
