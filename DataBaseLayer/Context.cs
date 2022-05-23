@@ -11,6 +11,7 @@ public class Context: DbContext
 {
     public DbSet<ExchangeStory> exchangeStories { get; set; }
     public DbSet<ExchangeRate> ExchangeRates { get; set; }
+    public DbSet<CurrencyAssociation> currencyAssociations { get; set; }
 
     public Context(DbContextOptions options) : base (options)
     {

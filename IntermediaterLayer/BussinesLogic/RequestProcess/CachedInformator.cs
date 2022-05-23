@@ -36,5 +36,10 @@ namespace IntermediateLayer.BussinesLogic.RequestProcess
         {
             return _informator.GetExchangeStory(userId);
         }
+
+        public string GetAbbriviatureName(string abbreviature)
+        {
+            return _informator.GetAbbriviatureName(abbreviature);
+        }
     }
 }

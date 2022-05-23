@@ -180,5 +180,36 @@ public class HomeController : Controller
 
         return response.Build().ToString();
     }
+    public string Symbols(string[] abbriviatures)
+    {
+        bool isSuccess = true;
+        Stopwatch stopwatch = new Stopwatch();
+        JSONBaseComponent symbols = new JSONBaseComponent("symbols");
+        ExchangeResponse response;
+        InfoComponent info;
+        string abbriviatureName;
+        stopwatch.Start();
+
+        try
+        {
+            foreach (string abbreviature in abbriviatures)
+            {
+                abbriviatureName = _informator.GetAbbriviatureName(abbreviature);
+                symbols.AddComponent(abbreviature, abbriviatureName);
+            }
+        }
+        catch
+        {
+            isSuccess=false;
+        }
+
+        stopwatch.Stop();
+
+        info = new InfoComponent(stopwatch.ElapsedMilliseconds);
+        response = new ExchangeResponse(DateTime.UtcNow.Date, info, isSuccess);
+        response.AddComponent(symbols);
+
+        return response.Build().ToString();
+    }
 
 }

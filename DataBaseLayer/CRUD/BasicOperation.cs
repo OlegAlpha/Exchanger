@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DataBaseLayer.Entities;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -21,6 +22,6 @@ public class BasicOperation
 
     public async Task AddAsync(object entity)
     {
-        await Task.Run(() => Add(entity));
+        await Task.Run(()=> Add(entity));
     }
 }
