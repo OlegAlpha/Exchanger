@@ -12,12 +12,14 @@ namespace IntermediateLayer.Models;
 public class UserStory
 {
     public int Id { get; }
+    private readonly BasicOperation _operation;
     public ObservableCollection<LocalExchangeStory> ExchangeStories { get; set; }
 
-    public UserStory(int Id)
+    public UserStory(int Id, BasicOperation operation)
     {
         this.Id = Id;
         ExchangeStories = new ObservableCollection<LocalExchangeStory>();
+        _operation = operation;
 
         ExchangeStories.CollectionChanged += ExchangeStories_CollectionChanged;
     }
@@ -28,7 +30,6 @@ public class UserStory
         {
             case System.Collections.Specialized.NotifyCollectionChangedAction.Add:
                 {
-                    BasicOperation operations = new BasicOperation();
 
                     foreach (LocalExchangeStory item in e.NewItems)
                     {
@@ -41,7 +42,7 @@ public class UserStory
                             Created = DateTime.UtcNow,
                         };
 
-                        operations.AddAsync(exchangeStory);
+                        _operations.AddAsync(exchangeStory);
                     }
                 }
                 break;

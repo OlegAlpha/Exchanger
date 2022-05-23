@@ -12,13 +12,8 @@ public class Context: DbContext
     public DbSet<ExchangeStory> exchangeStories { get; set; }
     public DbSet<ExchangeRate> ExchangeRates { get; set; }
 
-    public Context()
+    public Context(DbContextOptions options) : base (options)
     {
         Database.EnsureCreated();
-    }
-
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-    {
-        optionsBuilder.UseSqlServer("Server=(localdb)\\Columbus;Database=Exchanges;Trusted_Connection=True;");
     }
 }
