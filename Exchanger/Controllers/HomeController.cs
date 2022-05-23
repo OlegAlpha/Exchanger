@@ -10,6 +10,8 @@ using System.Diagnostics;
 using System.Linq;
 
 namespace Exchanger.Controllers;
+[ApiController]
+[Route("api/[controller]")]
 public class HomeController : Controller
 {
     private readonly CachedInformator _informator;
@@ -21,6 +23,8 @@ public class HomeController : Controller
         _converter = converter;
     }
 
+    [HttpGet]
+    [Route("exchangeRate")]
     public string GetExchangeRate(string baseCurrency, string[] currencies, DateTime? date = null)
     {
         bool isHistorical = date != null;
@@ -54,10 +58,11 @@ public class HomeController : Controller
 
         return response.Build().ToString();
     }
+
+    [HttpGet]
+    [Route("exchange")]
     public string Exchange(int UserId, decimal amount, string from, string to)
     {
-
-
         decimal result = 0;
         ExchangeRate exchangeRate = new ExchangeRate();
         Stopwatch stopwatch = new Stopwatch();
@@ -87,6 +92,8 @@ public class HomeController : Controller
 
         return response.Build().ToString();
     }
+    [HttpGet]
+    [Route("fluctuation")]
     public string Fluctuation(DateTime start, DateTime end, string baseCurrency, params string[] currencies)
     {
         bool isSuccess = true;
@@ -128,6 +135,8 @@ public class HomeController : Controller
 
         return response.Build().ToString();
     }
+    [HttpGet]
+    [Route("exchangeStory")]
     public string GetExchangeStory(DateTime start, DateTime end, string baseCurrency, string[] currencies)
     {
         bool isSuccess = true;

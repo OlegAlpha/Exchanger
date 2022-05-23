@@ -15,12 +15,12 @@ public class BasicOperation
 
     private void Add(object entity)
     {
-        _context.Add(entity);
+        _ = _context.AddAsync(entity).Result;
         _context.SaveChanges();
     }
 
     public async Task AddAsync(object entity)
     {
-        await Task.Run(()=> Add(entity));
+        await Task.Run(() => Add(entity));
     }
 }
