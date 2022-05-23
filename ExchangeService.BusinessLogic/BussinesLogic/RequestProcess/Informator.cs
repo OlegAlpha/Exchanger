@@ -55,16 +55,14 @@ public class Informator
         }
     }
 
-    public string GetAbbriviatureName(string abbriviature)
+    public string GetAbbreviatureName(string abbreviature)
     {
-        if (string.IsNullOrEmpty(abbriviature))
+        if (string.IsNullOrEmpty(abbreviature))
         {
-            throw new ArgumentNullException(nameof(abbriviature));
+            throw new ArgumentNullException(nameof(abbreviature));
         }
 
-        return _operation.ReadAbbriviatureAssociation(abbriviature);
-
-
+        return _operation.ReadAbbreviatureAssociation(abbreviature);
     }
 
     public decimal GetExchangeStory(int UserId)

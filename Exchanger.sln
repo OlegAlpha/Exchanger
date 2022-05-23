@@ -3,13 +3,13 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.1.32421.90
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Exchanger.Tests", "Exchanger.Tests\Exchanger.Tests.csproj", "{3F6A9099-692A-4C60-979D-66145A922850}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ExchangerService.Tests", "ExchangerService.Tests\ExchangerService.Tests.csproj", "{3F6A9099-692A-4C60-979D-66145A922850}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ExchangerService", "Exchanger\ExchangerService.csproj", "{C3D1A1CD-9F28-4F67-B8DC-AC8F44CD80B2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ExchangerService", "ExchangerService\ExchangerService.csproj", "{C3D1A1CD-9F28-4F67-B8DC-AC8F44CD80B2}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ExchangeService.BusinessLogic", "IntermediaterLayer\ExchangeService.BusinessLogic.csproj", "{0245ACF1-F679-47A0-A877-ED0F6802679F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ExchangeService.BusinessLogic", "ExchangeService.BusinessLogic\ExchangeService.BusinessLogic.csproj", "{0245ACF1-F679-47A0-A877-ED0F6802679F}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ExchangerService.DataAccessLayer", "DataBaseLayer\ExchangerService.DataAccessLayer.csproj", "{2D9979CE-11DD-49FD-9024-C10011EA8213}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ExchangerService.DataAccessLayer", "ExchangerService.DataAccessLayer\ExchangerService.DataAccessLayer.csproj", "{2D9979CE-11DD-49FD-9024-C10011EA8213}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

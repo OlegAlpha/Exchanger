@@ -10,19 +10,19 @@ namespace IntermediateLayer.Builders.JSON.Components;
 
 public class InfoComponent :  JSONBaseComponent
 {
-    public InfoComponent(long time, bool? isHisorical = null): base("info")
+    public InfoComponent(long time, bool? isHistorical = null): base("info")
     {
-        InitializeData(time, isHisorical);
+        InitializeData(time, isHistorical);
     }
 
-    private void InitializeData(long time, bool? isHisorical)
+    private void InitializeData(long time, bool? isHistorical)
     {
         string reguiredData = "";
         reguiredData = reguiredData.AddJSONComponent("timestamp", time.ToString());
 
-        if (isHisorical != null)
+        if (isHistorical != null)
         {
-            reguiredData = reguiredData.AddJSONComponent("historical", isHisorical.Value.ToString());
+            reguiredData = reguiredData.AddJSONComponent("historical", isHistorical.Value.ToString());
         }
 
         Data = new StringBuilder(reguiredData);
