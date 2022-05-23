@@ -12,12 +12,12 @@ using System.Linq;
 namespace Exchanger.Controllers;
 [ApiController]
 [Route("api/[controller]")]
-public class HomeController : Controller
+public class ExchangeController : Controller
 {
     private readonly CachedInformator _informator;
     private readonly Converter _converter;
 
-    public HomeController(CachedInformator informator, Converter converter)
+    public ExchangeController(CachedInformator informator, Converter converter)
     {
         _informator = informator;
         _converter = converter;
@@ -29,11 +29,11 @@ public class HomeController : Controller
     {
         bool isHistorical = date != null;
         bool isSuccess = true;
-        Stopwatch stopwatch = new Stopwatch();
+        Stopwatch timer = new Stopwatch();
         ExchangeRate exchangeRate;
         JSONBaseComponent rates = new("rates");
 
-        stopwatch.Start();
+        timer.Start();
         try
         {
             foreach (var currency in currencies)
@@ -47,10 +47,10 @@ public class HomeController : Controller
             isSuccess = false;
         }
 
-        stopwatch.Stop();
+        timer.Stop();
 
-        InfoComponent info = new InfoComponent(stopwatch.ElapsedMilliseconds, isHistorical);
-        ExchangeResponse response = new ExchangeResponse(date ?? DateTime.UtcNow.Date, info, isSuccess);
+        InfoComponent info = new(timer.ElapsedMilliseconds, isHistorical);
+        ExchangeResponse response = new(date ?? DateTime.UtcNow.Date, info, isSuccess);
 
         info.AddComponent("base", baseCurrency);
         response.AddComponent(rates);
@@ -61,28 +61,28 @@ public class HomeController : Controller
 
     [HttpGet]
     [Route("exchange")]
-    public string Exchange(int UserId, decimal amount, string from, string to)
+    public string Exchange(int userId, decimal amount, string from, string to)
     {
         decimal result = 0;
-        ExchangeRate exchangeRate = new ExchangeRate();
-        Stopwatch stopwatch = new Stopwatch();
+        ExchangeRate exchangeRate = new();
+        Stopwatch timer = new();
         bool isSuccess = true;
 
-        stopwatch.Start();
+        timer.Start();
         try
         {
             exchangeRate = _informator.GetExchangeRate(from, to);
-            result = _converter.Exchange(UserId, amount, exchangeRate);
+            result = _converter.Exchange(userId, amount, exchangeRate);
         }
         catch
         {
             isSuccess = false;
         }
 
-        stopwatch.Stop();
+        timer.Stop();
 
         QueryComponent query = new(exchangeRate?.From, exchangeRate?.To);
-        InfoComponent info = new(stopwatch.ElapsedMilliseconds, false);
+        InfoComponent info = new(timer.ElapsedMilliseconds, false);
         ExchangeResponse response = new(DateTime.UtcNow.Date, info, isSuccess, result);
 
         response.AddComponent(query);
@@ -97,7 +97,7 @@ public class HomeController : Controller
     public string Fluctuation(DateTime start, DateTime end, string baseCurrency, params string[] currencies)
     {
         bool isSuccess = true;
-        Stopwatch stopwatch = new();
+        Stopwatch timer = new();
         ExchangeRate startRate;
         ExchangeRate endRate;
         InfoComponent info;
@@ -105,7 +105,7 @@ public class HomeController : Controller
         JSONBaseComponent rates = new("rates");
         RateComponent rateComponent;
 
-        stopwatch.Start();
+        timer.Start();
 
         try
         {
@@ -123,9 +123,9 @@ public class HomeController : Controller
             isSuccess = false;
         }
 
-        stopwatch.Stop();
+        timer.Stop();
 
-        info = new InfoComponent(stopwatch.ElapsedMilliseconds);
+        info = new InfoComponent(timer.ElapsedMilliseconds);
         response = new ExchangeResponse(DateTime.UtcNow.Date, info, isSuccess);
         response.AddComponent(rates);
         info.AddComponent("fluctuation", true.ToString());
@@ -140,12 +140,12 @@ public class HomeController : Controller
     public string GetExchangeStory(DateTime start, DateTime end, string baseCurrency, string[] currencies)
     {
         bool isSuccess = true;
-        Stopwatch stopwatch = new Stopwatch();
+        Stopwatch timer = new();
         ExchangeRate exchangeRate;
         JSONBaseComponent dates;
         JSONBaseComponent rates = new("rates");
 
-        stopwatch.Start();
+        timer.Start();
         try
         {
             for (DateTime current = start; (current - end).Days < 0; current = current.AddDays(1))
@@ -166,10 +166,10 @@ public class HomeController : Controller
             isSuccess = false;
         }
 
-        stopwatch.Stop();
+        timer.Stop();
 
-        InfoComponent info = new InfoComponent(stopwatch.ElapsedMilliseconds);
-        ExchangeResponse response = new ExchangeResponse(DateTime.UtcNow.Date, info, isSuccess);
+        InfoComponent info = new(timer.ElapsedMilliseconds);
+        ExchangeResponse response = new(DateTime.UtcNow.Date, info, isSuccess);
 
         info.AddComponent("base", baseCurrency);
         info.AddComponent("start_date", start.ToString());
@@ -180,22 +180,22 @@ public class HomeController : Controller
 
         return response.Build().ToString();
     }
-    public string Symbols(string[] abbriviatures)
+    public string Symbols(string[] abbreviatures)
     {
         bool isSuccess = true;
-        Stopwatch stopwatch = new Stopwatch();
-        JSONBaseComponent symbols = new JSONBaseComponent("symbols");
+        Stopwatch stopwatch = new();
+        JSONBaseComponent symbols = new("symbols");
         ExchangeResponse response;
         InfoComponent info;
-        string abbriviatureName;
+        string abbreviatureName;
         stopwatch.Start();
 
         try
         {
-            foreach (string abbreviature in abbriviatures)
+            foreach (string abbreviature in abbreviatures)
             {
-                abbriviatureName = _informator.GetAbbriviatureName(abbreviature);
-                symbols.AddComponent(abbreviature, abbriviatureName);
+                abbreviatureName = _informator.GetAbbriviatureName(abbreviature);
+                symbols.AddComponent(abbreviature, abbreviatureName);
             }
         }
         catch

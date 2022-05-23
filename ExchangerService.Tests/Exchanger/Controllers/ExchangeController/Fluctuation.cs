@@ -16,9 +16,9 @@ using NSubstitute;
 using Microsoft.Extensions.Configuration;
 
 namespace Exchanger.Tests.ExchangerTests.Controllers.HomeController;
-public class GetExchangeStory
+public class Fluctuation
 {
-    private Exchanger.Controllers.HomeController GetController()
+    private Exchanger.Controllers.ExchangeController GetController()
     {
         var options = new DbContextOptionsBuilder<Context>().UseInMemoryDatabase("Test").Options;
         var context = new Context(options);
@@ -28,43 +28,41 @@ public class GetExchangeStory
         configuration["RateLifetimeInCache"].Returns("1800000");
         configuration["MaxCountInPeriod"].Returns("10");
         configuration["ExchangeLimitedPeriodInHours"].Returns("1");
-        var controller = new Exchanger.Controllers.HomeController(new CachedInformator(informator, configuration), new Converter(operation, configuration));
+        var controller = new Exchanger.Controllers.ExchangeController(new CachedInformator(informator, configuration), new Converter(operation, configuration));
         return controller;
     }
 
-    public void GetStory()
+    public void GetFluctuation()
     {
         var controller = GetController();
-
         DateTime start = DateTime.Today.AddDays(-8);
         DateTime end = DateTime.Today.AddDays(-1);
         string baseCurrency = "UAH";
         string[] currencies = new[] { "EUR" };
 
-        string resultJSON = controller.GetExchangeStory(start, end, baseCurrency, currencies);
+        string resultJSON = controller.Fluctuation(start, end, baseCurrency, currencies);
         dynamic result = JsonConvert.DeserializeObject<dynamic>(resultJSON);
 
         Assert.NotNull(result);
         Assert.True(bool.Parse(result.success.ToString()));
-        Assert.True(bool.Parse(result.timeseries.ToString()));
+        Assert.True(bool.Parse(result.fluctuation.ToString()));
         Assert.NotEqual("", result.rates.ToString());
     }
 
-    public void GetFailedStory()
+    public void GetIncorrectFluctuation()
     {
         var controller = GetController();
-
         DateTime start = DateTime.Today.AddDays(-8);
         DateTime end = DateTime.Today.AddDays(-1);
-        string baseCurrency = "UAH";
+        string baseCurrency = "fse";
         string[] currencies = new[] { "EUR" };
 
-        string resultJSON = controller.GetExchangeStory(start, end, baseCurrency, currencies);
+        string resultJSON = controller.Fluctuation(start, end, baseCurrency, currencies);
         dynamic result = JsonConvert.DeserializeObject<dynamic>(resultJSON);
 
         Assert.NotNull(result);
         Assert.False(bool.Parse(result.success.ToString()));
-        Assert.True(bool.Parse(result.timeseries.ToString()));
+        Assert.True(bool.Parse(result.fluctuation.ToString()));
         Assert.Equal("", result.rates.ToString());
     }
 }

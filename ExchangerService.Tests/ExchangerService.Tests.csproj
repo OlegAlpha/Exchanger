@@ -25,6 +25,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\ExchangerService\ExchangerService.csproj" />
     <ProjectReference Include="..\Exchanger\ExchangerService.csproj" />
   </ItemGroup>
 
