@@ -12,8 +12,15 @@ using System.Linq;
 namespace Exchanger.Controllers;
 public class HomeController : Controller
 {
-    private static readonly Informator informator = new Informator();
-    private static readonly Converter converter = new Converter();
+    private readonly CachedInformator _informator;
+    private readonly Converter _converter;
+
+    public HomeController(CachedInformator informator, Converter converter)
+    {
+        _informator = informator;
+        _converter = converter;
+    }
+
     public string GetExchangeRate(string baseCurrency, string[] currencies, DateTime? date = null)
     {
         bool isHistorical = date != null;
@@ -27,7 +34,7 @@ public class HomeController : Controller
         {
             foreach (var currency in currencies)
             {
-                exchangeRate = informator.GetExchangeRate(baseCurrency, currency, date);
+                exchangeRate = _informator.GetExchangeRate(baseCurrency, currency, date);
                 rates.AddComponent(currency, exchangeRate.Rate.ToString());
             }
         }
@@ -59,8 +66,8 @@ public class HomeController : Controller
         stopwatch.Start();
         try
         {
-            exchangeRate = informator.GetExchangeRate(from, to);
-            result = converter.Exchange(UserId, amount, exchangeRate);
+            exchangeRate = _informator.GetExchangeRate(from, to);
+            result = _converter.Exchange(UserId, amount, exchangeRate);
         }
         catch
         {
@@ -97,8 +104,8 @@ public class HomeController : Controller
         {
             foreach (string currency in currencies)
             {
-                startRate = informator.GetExchangeRate(baseCurrency, currency, start);
-                endRate = informator.GetExchangeRate(baseCurrency, currency, end);
+                startRate = _informator.GetExchangeRate(baseCurrency, currency, start);
+                endRate = _informator.GetExchangeRate(baseCurrency, currency, end);
 
                 rateComponent = new RateComponent(currency, startRate.Rate, endRate.Rate);
                 rates.AddComponent(rateComponent);
@@ -138,7 +145,7 @@ public class HomeController : Controller
 
                 foreach (var currency in currencies)
                 {
-                    exchangeRate = informator.GetExchangeRate(baseCurrency, currency, current);
+                    exchangeRate = _informator.GetExchangeRate(baseCurrency, currency, current);
                     dates.AddComponent(currency, exchangeRate.Rate.ToString());
                 }
 

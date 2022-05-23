@@ -1,8 +1,14 @@
+using IntermediateLayer.BussinesLogic.RequestProcess;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddRazorPages();
-builder.Services.AddMemoryCache();
+var services = builder.Services;
+services.AddRazorPages();
+services.AddScoped<CachedInformator>();
+services.AddScoped<Informator>();
+services.AddScoped<Converter>();
+
 
 var app = builder.Build();
 
