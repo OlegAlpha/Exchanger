@@ -8,15 +8,16 @@ using System.Threading.Tasks;
 namespace DataBaseLayer.CRUD;
 public class BasicOperation
 {
-    private static Context context = new Context();
+    private readonly Context _context;
+    public BasicOperation(Context context)
+    {
+        _context = context;
+    }
 
     private void Add(object entity)
     {
-        lock (context)
-        {
-            context.Add(entity);
-            context.SaveChanges();
-        }
+        _context.Add(entity);
+        _context.SaveChanges();
     }
 
     public async Task AddAsync(object entity)

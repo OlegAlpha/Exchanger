@@ -1,4 +1,7 @@
 using IntermediateLayer.BussinesLogic.RequestProcess;
+using DataBaseLayer;
+using Microsoft.EntityFrameworkCore;
+using DataBaseLayer.CRUD;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -8,7 +11,11 @@ services.AddRazorPages();
 services.AddScoped<CachedInformator>();
 services.AddScoped<Informator>();
 services.AddScoped<Converter>();
+services.AddScoped<BasicOperation>();
 
+var configuration = builder.Configuration;
+
+services.AddDbContext<Context>(optionsBuilder => optionsBuilder.UseSqlServer(configuration["ConnectionString"]));
 
 var app = builder.Build();
 

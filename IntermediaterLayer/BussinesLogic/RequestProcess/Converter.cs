@@ -7,17 +7,27 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using DataBaseLayer.CRUD;
+using Microsoft.Extensions.Configuration;
 
 namespace IntermediateLayer.BussinesLogic.RequestProcess;
 public class Converter
 {
-    private double LimitedPeriod = 1;
-    private double maxCountInPeriod = 10;
+    private readonly double _exchangeLimitedPeriodInHours;
+    private readonly double _maxCountInPeriod;
+    private readonly BasicOperation _operation;
+    public Converter(BasicOperation operation, IConfiguration configuration)
+    {
+        _operation = operation;
+        _maxCountInPeriod = Double.Parse(configuration["MaxCountInPeriod"]);
+        _exchangeLimitedPeriodInHours = Double.Parse(configuration["ExchangeLimitedPeriodInHours"]);
+    }
+
     private void AddToStory(int UserId, decimal amount, ExchangeRate exchangeRate)
     {
         if (!StaticObjects.Stories.ContainsKey(UserId))
         {
-            UserStory userStory = new UserStory(UserId);
+            UserStory userStory = new UserStory(UserId, _operation);
 
             StaticObjects.Stories.Add(UserId, userStory);
         }
@@ -35,7 +45,7 @@ public class Converter
     private bool CheckCountExchanges(int userId)
     {
         IEnumerable<LocalExchangeStory> story
-            = StaticObjects.Stories[userId].ExchangeStories.Where(story => (DateTime.UtcNow - story.Created).Hours >= LimitedPeriod);
+            = StaticObjects.Stories[userId].ExchangeStories.Where(story => (DateTime.UtcNow - story.Created).Hours >= _exchangeLimitedPeriodInHours);
 
         if(story is null)
         {
@@ -47,7 +57,7 @@ public class Converter
             StaticObjects.Stories[userId].ExchangeStories.Remove(storyItem);
         }
 
-        if (StaticObjects.Stories[userId].ExchangeStories.Count() > maxCountInPeriod)
+        if (StaticObjects.Stories[userId].ExchangeStories.Count() > _maxCountInPeriod)
         {
             throw new Exception("Too much exchanges");
         }
