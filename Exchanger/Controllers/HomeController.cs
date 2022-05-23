@@ -14,9 +14,9 @@ public class HomeController : Controller
 {
     private static readonly Informator informator = new Informator();
     private static readonly Converter converter = new Converter();
-    public string GetExchangeRate(string baseCurrency, DateTime? date = null, params string[] currencies)
+    public string GetExchangeRate(string baseCurrency, string[] currencies, DateTime? date = null)
     {
-        bool isHistorical = date is null;
+        bool isHistorical = date != null;
         bool isSuccess = true;
         Stopwatch stopwatch = new Stopwatch();
         ExchangeRate exchangeRate;
@@ -59,8 +59,6 @@ public class HomeController : Controller
         stopwatch.Start();
         try
         {
-
-
             exchangeRate = informator.GetExchangeRate(from, to);
             result = converter.Exchange(UserId, amount, exchangeRate);
         }
@@ -123,7 +121,7 @@ public class HomeController : Controller
 
         return response.Build().ToString();
     }
-    public string GetExchangeStory(DateTime start, DateTime end, string baseCurrency, params string[] currencies)
+    public string GetExchangeStory(DateTime start, DateTime end, string baseCurrency, string[] currencies)
     {
         bool isSuccess = true;
         Stopwatch stopwatch = new Stopwatch();
