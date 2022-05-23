@@ -139,7 +139,7 @@ public class GetExchangeRateTests
 
         dynamic result = JsonConvert.DeserializeObject<dynamic>(resultJSON);
 
-        Assert.False(bool.Parse(result.info.historical.ToString()));
+        Assert.True(bool.Parse(result.info.historical.ToString()));
     }
     [Fact]
     public void GetFailedHistoricData()
@@ -153,6 +153,6 @@ public class GetExchangeRateTests
 
         dynamic result = JsonConvert.DeserializeObject<dynamic>(resultJSON);
 
-        Assert.False(bool.Parse(result.info.historical.ToString()));
+        Assert.True(bool.Parse(result.info.historical.ToString()));
     }
 }

@@ -61,7 +61,6 @@ public class ExchangeTests
 
         Assert.NotNull(result);
         Assert.False(bool.Parse(result.success.ToString()));
-        Assert.Equal("", result.result.ToString());
     }
     [Fact]
     public void SpamExchange()
@@ -82,6 +81,5 @@ public class ExchangeTests
 
         Assert.NotNull(result);
         Assert.False(bool.Parse(result.success.ToString()));
-        Assert.Equal("",result.result.ToString());
     }
 }
