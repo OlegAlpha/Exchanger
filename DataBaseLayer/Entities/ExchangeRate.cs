@@ -14,4 +14,9 @@ public class ExchangeRate
     public string To { get; set; }
     public decimal Rate { get; set; }
     public DateTime Created { get; set; }
+
+    public override int GetHashCode()
+    {
+        return HashCode.Combine(From, To);
+    }
 }
