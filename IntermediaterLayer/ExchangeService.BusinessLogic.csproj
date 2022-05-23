@@ -12,7 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\DataBaseLayer\DataBaseLayer.csproj" />
+    <ProjectReference Include="..\DataBaseLayer\ExchangerService.AccessLayer.csproj" />
   </ItemGroup>
 
 </Project>
