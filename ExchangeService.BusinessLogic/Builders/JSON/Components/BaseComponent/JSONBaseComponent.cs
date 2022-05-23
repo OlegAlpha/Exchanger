@@ -10,6 +10,7 @@ public class JSONBaseComponent
     public JSONBaseComponent(string name)
     {
         Name = name;
+        Data = new StringBuilder();
     }
 
     /// <summary>
