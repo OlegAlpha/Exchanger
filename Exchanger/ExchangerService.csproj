@@ -12,7 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\IntermediaterLayer\IntermediateLayer.csproj" />
+    <ProjectReference Include="..\IntermediaterLayer\ExchangeService.BusinessLogic.csproj" />
   </ItemGroup>
 
 </Project>

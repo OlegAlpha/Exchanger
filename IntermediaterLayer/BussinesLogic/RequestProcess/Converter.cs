@@ -13,14 +13,16 @@ using Microsoft.Extensions.Configuration;
 namespace IntermediateLayer.BussinesLogic.RequestProcess;
 public class Converter
 {
+    private const string MaxCountInPeriodKey = "MaxCountInPeriod";
+    private const string ExchangeLimitedPeriodKey = "ExchangeLimitedPeriodInHours";
     private readonly double _exchangeLimitedPeriodInHours;
     private readonly double _maxCountInPeriod;
     private readonly BasicOperation _operation;
     public Converter(BasicOperation operation, IConfiguration configuration)
     {
         _operation = operation;
-        _maxCountInPeriod = Double.Parse(configuration["MaxCountInPeriod"]);
-        _exchangeLimitedPeriodInHours = Double.Parse(configuration["ExchangeLimitedPeriodInHours"]);
+        _maxCountInPeriod = Double.Parse(configuration[MaxCountInPeriodKey]);
+        _exchangeLimitedPeriodInHours = Double.Parse(configuration[ExchangeLimitedPeriodKey]);
     }
 
     private void AddToStory(int UserId, decimal amount, ExchangeRate exchangeRate)

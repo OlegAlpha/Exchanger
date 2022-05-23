@@ -6,6 +6,7 @@ namespace IntermediateLayer.BussinesLogic.RequestProcess
 {
     public class CachedInformator
     {
+        private const string rateLifetimeKey = "RateLifetimeInCache";
         private readonly Informator _informator;
         private readonly int _rateLifetimeInCache;
         private static readonly ConcurrentDictionary<ExchangeRate, DateTime> s_cachedRates = new();
@@ -13,7 +14,7 @@ namespace IntermediateLayer.BussinesLogic.RequestProcess
         public CachedInformator(Informator informator, IConfiguration configuration)
         {
             _informator = informator;
-            _rateLifetimeInCache = Int32.Parse(configuration["RateLifetimeInCache"]);
+            _rateLifetimeInCache = Int32.Parse(configuration[rateLifetimeKey]);
         }
 
         public ExchangeRate GetExchangeRate(string from, string to, DateTime? date = null)
