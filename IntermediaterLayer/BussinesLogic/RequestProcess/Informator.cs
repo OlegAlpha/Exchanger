@@ -1,4 +1,5 @@
-﻿using DataBaseLayer.Entities;
+﻿using DataBaseLayer.CRUD;
+using DataBaseLayer.Entities;
 using IntermediateLayer.Models.StaticObjects;
 using System;
 using System.Collections.Generic;
@@ -46,6 +47,20 @@ public class Informator
 
             return exchange && lastDate;
         }
+    }
+
+    public string GetAbbriviatureName(string abbriviature)
+    {
+        if (string.IsNullOrEmpty(abbriviature))
+        {
+            throw new ArgumentNullException(nameof(abbriviature));
+        }
+
+        BasicOperation SQLOperation = new BasicOperation();
+
+        return SQLOperation.ReadAbbriviatureAssociation(abbriviature);
+
+
     }
 
     public decimal GetExchangeStory(int UserId)
