@@ -3,18 +3,39 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Xunit;
+using Exchanger.Controllers;
+using IntermediateLayer;
+using IntermediateLayer.BussinesLogic.RequestProcess;
+using DataBaseLayer.CRUD;
+using Microsoft.EntityFrameworkCore;
+using DataBaseLayer;
+using NSubstitute;
+using Microsoft.Extensions.Configuration;
 
 namespace Exchanger.Tests.ExchangerTests.Controllers.HomeController;
 public class GetExchangeRateTests
 {
-
-    private Exchanger.Controllers.HomeController controller = new();
+    private Exchanger.Controllers.HomeController GetController()
+    {
+        var options = new DbContextOptionsBuilder<Context>().UseInMemoryDatabase("Test").Options;
+        var context = new Context(options);
+        var operation = new BasicOperation(context);
+        var informator = new Informator(operation);
+        var configuration = Substitute.For<IConfiguration>();
+        configuration["RateLifetimeInCache"].Returns("1800000");
+        configuration["MaxCountInPeriod"].Returns("10");
+        configuration["ExchangeLimitedPeriodInHours"].Returns("1");
+        var controller = new Exchanger.Controllers.HomeController(new CachedInformator(informator, configuration), new Converter(operation, configuration));
+        return controller;
+    }
 
     [Fact]
     public void GetActualData()
     {
+        var controller = GetController();
         string baseCurrency = "USD";
         string[] resultCurrency = new[] { "UAH", };
 
@@ -30,6 +51,7 @@ public class GetExchangeRateTests
     [Fact]
     public void GetActualDatas()
     {
+        var controller = GetController();
         string baseCurrency = "USD";
         string[] resultCurrency = new[] { "UAH", "EUR"};
 
@@ -46,6 +68,8 @@ public class GetExchangeRateTests
     [Fact]
     public void GetFailedActualDatas()
     {
+        var controller = GetController();
+
         string baseCurrency = "USD";
         string[] resultCurrency = new[] { "dea", "EUR" };
 
@@ -58,6 +82,7 @@ public class GetExchangeRateTests
     [Fact]
     public void GetFailedActualData()
     {
+        var controller = GetController();
         string baseCurrency = "USD";
         string[] resultCurrency = new[] { "dea" };
 
@@ -70,6 +95,7 @@ public class GetExchangeRateTests
     [Fact]
     public void GetHistoricData()
     {
+        var controller = GetController();
         string baseCurrency = "USD";
         string[] resultCurrency = new[] { "UAH", };
         DateTime dateTime = DateTime.Today.AddDays(-1); 
@@ -86,6 +112,7 @@ public class GetExchangeRateTests
     [Fact]
     public void GetHistoricDatas()
     {
+        var controller = GetController();
         string baseCurrency = "USD";
         string[] resultCurrency = new[] { "UAH", "EUR" };
         DateTime dateTime = DateTime.Today.AddDays(-1);
@@ -103,6 +130,7 @@ public class GetExchangeRateTests
     [Fact]
     public void GetFailedHistoricDatas()
     {
+        var controller = GetController();
         string baseCurrency = "USD";
         string[] resultCurrency = new[] { "dea", "EUR" };
         DateTime dateTime = DateTime.Today.AddDays(-1);
@@ -116,6 +144,7 @@ public class GetExchangeRateTests
     [Fact]
     public void GetFailedHistoricData()
     {
+        var controller = GetController();
         string baseCurrency = "USD";
         string[] resultCurrency = new[] { "dea" };
         DateTime dateTime = DateTime.Today.AddDays(-1);

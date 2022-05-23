@@ -42,7 +42,7 @@ public class UserStory
                             Created = DateTime.UtcNow,
                         };
 
-                        _operations.AddAsync(exchangeStory);
+                        _operation.AddAsync(exchangeStory);
                     }
                 }
                 break;
