@@ -25,6 +25,11 @@ public class BasicOperation
         await Task.Run(()=> Add(entity));
     }
 
+    public ExchangeRate? FindOrDefault(Func<ExchangeRate, bool> predicate)
+    {
+        return _context.ExchangeRates.FirstOrDefault(predicate);
+    }
+
     public string ReadAbbriviatureAssociation(string abbriviature)
     {
         if (string.IsNullOrEmpty(abbriviature))

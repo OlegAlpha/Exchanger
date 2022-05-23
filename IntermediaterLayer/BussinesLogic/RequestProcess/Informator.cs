@@ -6,10 +6,17 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using DataBaseLayer;
 
 namespace IntermediateLayer.BussinesLogic.RequestProcess;
 public class Informator
 {
+    private readonly BasicOperation _operation;
+    public Informator(BasicOperation operation)
+    {
+        _operation = operation;
+    }
+
     public ExchangeRate GetExchangeRate(string from, string to, DateTime? date = null)
     {
         if(string.IsNullOrWhiteSpace(from) || string.IsNullOrWhiteSpace(to))
@@ -19,8 +26,7 @@ public class Informator
             throw new ArgumentNullException(message);
         }
 
-
-        ExchangeRate result = StaticObjects.Context.ExchangeRates.FirstOrDefault(find);
+        ExchangeRate? result = _operation.FindOrDefault(find);
 
         if(result == null)
         {
@@ -56,9 +62,7 @@ public class Informator
             throw new ArgumentNullException(nameof(abbriviature));
         }
 
-        BasicOperation SQLOperation = new BasicOperation();
-
-        return SQLOperation.ReadAbbriviatureAssociation(abbriviature);
+        return _operation.ReadAbbriviatureAssociation(abbriviature);
 
 
     }
