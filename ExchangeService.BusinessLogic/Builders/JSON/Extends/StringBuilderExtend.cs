@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Text;
 
-namespace IntermediateLayer.Builders.JSON;
+namespace ExchangeService.BusinessLogic.Builders.JSON.Extends;
 internal static class StringBuilderExtend
 {
     public static StringBuilder AppendJSONElement(this StringBuilder source, string left, string right)

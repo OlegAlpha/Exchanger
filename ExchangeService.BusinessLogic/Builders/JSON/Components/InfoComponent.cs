@@ -1,30 +1,26 @@
-﻿using IntermediateLayer.Builders.JSON.Components.BaseInterface;
-using IntermediateLayer.Builders.JSON.Extends;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Text;
+using ExchangeService.BusinessLogic.Builders.JSON.Components.BaseComponent;
+using ExchangeService.BusinessLogic.Builders.JSON.Extends;
 
-namespace IntermediateLayer.Builders.JSON.Components;
+namespace ExchangeService.BusinessLogic.Builders.JSON.Components;
 
 public class InfoComponent :  JSONBaseComponent
 {
-    public InfoComponent(long time, bool? isHisorical = null): base("info")
+    public InfoComponent(long time, bool? isHistorical = null): base("info")
     {
-        InitializeData(time, isHisorical);
+        InitializeData(time, isHistorical);
     }
 
-    private void InitializeData(long time, bool? isHisorical)
+    private void InitializeData(long time, bool? isHistorical)
     {
-        string reguiredData = "";
-        reguiredData = reguiredData.AddJSONComponent("timestamp", time.ToString());
+        string requiredData = "";
+        requiredData = requiredData.AddJSONComponent("timestamp", time.ToString());
 
-        if (isHisorical != null)
+        if (isHistorical != null)
         {
-            reguiredData = reguiredData.AddJSONComponent("historical", isHisorical.Value.ToString());
+            requiredData = requiredData.AddJSONComponent("historical", isHistorical.Value.ToString());
         }
 
-        Data = new StringBuilder(reguiredData);
+        Data = new StringBuilder(requiredData);
     }
 }

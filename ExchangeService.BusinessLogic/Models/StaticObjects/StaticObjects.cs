@@ -1,11 +1,6 @@
-﻿using DataBaseLayer;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using ExchangeService.BusinessLogic.Models.Story;
 
-namespace IntermediateLayer.Models.StaticObjects;
+namespace ExchangeService.BusinessLogic.Models.StaticObjects;
 public static class StaticObjects
 {
     public static Dictionary<int, UserStory> Stories { get; } = new Dictionary<int, UserStory>();

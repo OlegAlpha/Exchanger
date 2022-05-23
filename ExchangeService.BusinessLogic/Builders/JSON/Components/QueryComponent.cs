@@ -1,12 +1,8 @@
-﻿using IntermediateLayer.Builders.JSON.Components.BaseInterface;
-using IntermediateLayer.Builders.JSON.Extends;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Text;
+using ExchangeService.BusinessLogic.Builders.JSON.Components.BaseComponent;
+using ExchangeService.BusinessLogic.Builders.JSON.Extends;
 
-namespace IntermediateLayer.Builders.JSON.Components;
+namespace ExchangeService.BusinessLogic.Builders.JSON.Components;
 public class QueryComponent : JSONBaseComponent
 {
     public QueryComponent(string from, string to) : base("query")
@@ -16,10 +12,10 @@ public class QueryComponent : JSONBaseComponent
 
     private void InitializeData(string from, string to)
     {
-        string reguiredData = "";
+        string requiredData = "";
 
-        reguiredData = reguiredData.AddJSONComponent("from", from);
-        reguiredData = reguiredData.AddJSONComponent("to", to);
-        Data = new StringBuilder(reguiredData);
+        requiredData = requiredData.AddJSONComponent("from", from);
+        requiredData = requiredData.AddJSONComponent("to", to);
+        Data = new StringBuilder(requiredData);
     }
 }

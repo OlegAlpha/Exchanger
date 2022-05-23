@@ -1,11 +1,6 @@
-﻿using IntermediateLayer.Builders.JSON.Components;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using ExchangeService.BusinessLogic.Builders.JSON.Components;
 
-namespace IntermediateLayer.Builders.JSON;
+namespace ExchangeService.BusinessLogic.Builders.JSON;
 public class ExchangeResponse: JSONBuilder
 {
     public ExchangeResponse(DateTime dateTime, InfoComponent info,bool isSuccess , object? result = null)

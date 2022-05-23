@@ -1,21 +1,14 @@
-﻿using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Text.Json.Serialization;
-using System.Threading.Tasks;
-using Xunit;
-using Exchanger.Controllers;
-using IntermediateLayer;
-using IntermediateLayer.BussinesLogic.RequestProcess;
-using DataBaseLayer.CRUD;
+﻿using System;
+using ExchangerService.DataAccessLayer;
+using ExchangerService.DataAccessLayer.CRUD;
+using ExchangeService.BusinessLogic.BusinessLogic.RequestProcess;
 using Microsoft.EntityFrameworkCore;
-using DataBaseLayer;
-using NSubstitute;
 using Microsoft.Extensions.Configuration;
+using Newtonsoft.Json;
+using NSubstitute;
+using Xunit;
 
-namespace Exchanger.Tests.ExchangerTests.Controllers.HomeController;
+namespace ExchangerService.Tests.Exchanger.Controllers.HomeController;
 public class GetExchangeStory
 {
     private Exchanger.Controllers.ExchangeController GetController()
@@ -23,12 +16,12 @@ public class GetExchangeStory
         var options = new DbContextOptionsBuilder<Context>().UseInMemoryDatabase("Test").Options;
         var context = new Context(options);
         var operation = new BasicOperation(context);
-        var informator = new Informator(operation);
+        var informator = new Informer(operation);
         var configuration = Substitute.For<IConfiguration>();
         configuration["RateLifetimeInCache"].Returns("1800000");
         configuration["MaxCountInPeriod"].Returns("10");
         configuration["ExchangeLimitedPeriodInHours"].Returns("1");
-        var controller = new Exchanger.Controllers.ExchangeController(new CachedInformator(informator, configuration), new Converter(operation, configuration));
+        var controller = new ExchangerService.Controllers.HomeController(new CachedInformer(informator, configuration), new Converter(operation, configuration));
         return controller;
     }
 

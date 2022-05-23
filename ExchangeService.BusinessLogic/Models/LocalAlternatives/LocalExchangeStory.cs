@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using DataBaseLayer.Entities;
+﻿using ExchangerService.DataAccessLayer.Entities;
 
-namespace IntermediateLayer.Models.LocalivesAlternatives;
+namespace ExchangeService.BusinessLogic.Models.LocalAlternatives;
 public class LocalExchangeStory
 {
     public decimal Amount { get; set; }

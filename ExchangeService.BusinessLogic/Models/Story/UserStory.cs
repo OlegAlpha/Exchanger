@@ -1,14 +1,9 @@
-﻿using DataBaseLayer.CRUD;
-using DataBaseLayer.Entities;
-using IntermediateLayer.Models.LocalivesAlternatives;
-using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.ObjectModel;
+using ExchangerService.DataAccessLayer.CRUD;
+using ExchangerService.DataAccessLayer.Entities;
+using ExchangeService.BusinessLogic.Models.LocalAlternatives;
 
-namespace IntermediateLayer.Models;
+namespace ExchangeService.BusinessLogic.Models.Story;
 public class UserStory
 {
     public int Id { get; }

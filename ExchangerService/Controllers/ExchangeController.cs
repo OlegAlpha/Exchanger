@@ -1,25 +1,22 @@
-﻿using DataBaseLayer.Entities;
-using IntermediateLayer.Builders.JSON;
-using IntermediateLayer.Builders.JSON.Components;
-using IntermediateLayer.Builders.JSON.Components.BaseInterface;
-using IntermediateLayer.BussinesLogic.RequestProcess;
-using IntermediateLayer.Models.LocalivesAlternatives;
-using IntermediateLayer.Models.StaticObjects;
+﻿using System.Diagnostics;
+using ExchangerService.DataAccessLayer.Entities;
+using ExchangeService.BusinessLogic.Builders.JSON;
+using ExchangeService.BusinessLogic.Builders.JSON.Components;
+using ExchangeService.BusinessLogic.Builders.JSON.Components.BaseComponent;
+using ExchangeService.BusinessLogic.BusinessLogic.RequestProcess;
 using Microsoft.AspNetCore.Mvc;
-using System.Diagnostics;
-using System.Linq;
 
-namespace Exchanger.Controllers;
+namespace ExchangerService.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 public class ExchangeController : Controller
 {
-    private readonly CachedInformator _informator;
+    private readonly CachedInformer _informer;
     private readonly Converter _converter;
 
     public ExchangeController(CachedInformator informator, Converter converter)
     {
-        _informator = informator;
+        _informer = informer;
         _converter = converter;
     }
 
@@ -38,7 +35,7 @@ public class ExchangeController : Controller
         {
             foreach (var currency in currencies)
             {
-                exchangeRate = _informator.GetExchangeRate(baseCurrency, currency, date);
+                exchangeRate = _informer.GetExchangeRate(baseCurrency, currency, date);
                 rates.AddComponent(currency, exchangeRate.Rate.ToString());
             }
         }
@@ -71,8 +68,8 @@ public class ExchangeController : Controller
         timer.Start();
         try
         {
-            exchangeRate = _informator.GetExchangeRate(from, to);
-            result = _converter.Exchange(userId, amount, exchangeRate);
+            exchangeRate = _informer.GetExchangeRate(from, to);
+            result = _converter.Exchange(UserId, amount, exchangeRate);
         }
         catch
         {
@@ -111,8 +108,8 @@ public class ExchangeController : Controller
         {
             foreach (string currency in currencies)
             {
-                startRate = _informator.GetExchangeRate(baseCurrency, currency, start);
-                endRate = _informator.GetExchangeRate(baseCurrency, currency, end);
+                startRate = _informer.GetExchangeRate(baseCurrency, currency, start);
+                endRate = _informer.GetExchangeRate(baseCurrency, currency, end);
 
                 rateComponent = new RateComponent(currency, startRate.Rate, endRate.Rate);
                 rates.AddComponent(rateComponent);
@@ -154,7 +151,7 @@ public class ExchangeController : Controller
 
                 foreach (var currency in currencies)
                 {
-                    exchangeRate = _informator.GetExchangeRate(baseCurrency, currency, current);
+                    exchangeRate = _informer.GetExchangeRate(baseCurrency, currency, current);
                     dates.AddComponent(currency, exchangeRate.Rate.ToString());
                 }
 
@@ -194,8 +191,8 @@ public class ExchangeController : Controller
         {
             foreach (string abbreviature in abbreviatures)
             {
-                abbreviatureName = _informator.GetAbbriviatureName(abbreviature);
-                symbols.AddComponent(abbreviature, abbreviatureName);
+                abbriviatureName = _informer.GetAbbreviatureName(abbreviature);
+                symbols.AddComponent(abbreviature, abbriviatureName);
             }
         }
         catch

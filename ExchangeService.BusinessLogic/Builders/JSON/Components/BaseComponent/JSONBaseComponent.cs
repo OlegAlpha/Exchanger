@@ -1,11 +1,7 @@
-﻿using IntermediateLayer.Builders.JSON.Extends;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Text;
+using ExchangeService.BusinessLogic.Builders.JSON.Extends;
 
-namespace IntermediateLayer.Builders.JSON.Components.BaseInterface;
+namespace ExchangeService.BusinessLogic.Builders.JSON.Components.BaseComponent;
 public class JSONBaseComponent
 {
     public string Name { get; }
