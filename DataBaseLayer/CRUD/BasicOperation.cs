@@ -33,7 +33,7 @@ public class BasicOperation
         }
 
 
-        CurrencyAssociation result = context.currencyAssociations?.FirstOrDefault((abbr) => abbr.Abbreviature.Equals(abbriviature));
+        CurrencyAssociation result = _context.currencyAssociations?.FirstOrDefault((abbr) => abbr.Abbreviature.Equals(abbriviature));
 
         if (result is null)
         {
