@@ -14,7 +14,7 @@ public class ExchangeController : Controller
     private readonly CachedInformer _informer;
     private readonly Converter _converter;
 
-    public ExchangeController(CachedInformator informator, Converter converter)
+    public ExchangeController(CachedInformer informer, Converter converter)
     {
         _informer = informer;
         _converter = converter;
@@ -69,7 +69,7 @@ public class ExchangeController : Controller
         try
         {
             exchangeRate = _informer.GetExchangeRate(from, to);
-            result = _converter.Exchange(UserId, amount, exchangeRate);
+            result = _converter.Exchange(userId, amount, exchangeRate);
         }
         catch
         {
@@ -191,8 +191,8 @@ public class ExchangeController : Controller
         {
             foreach (string abbreviature in abbreviatures)
             {
-                abbriviatureName = _informer.GetAbbreviatureName(abbreviature);
-                symbols.AddComponent(abbreviature, abbriviatureName);
+                abbreviatureName = _informer.GetAbbreviatureName(abbreviature);
+                symbols.AddComponent(abbreviature, abbreviatureName);
             }
         }
         catch

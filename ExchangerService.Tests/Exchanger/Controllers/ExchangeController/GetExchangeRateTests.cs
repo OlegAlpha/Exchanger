@@ -11,7 +11,7 @@ using Xunit;
 namespace ExchangerService.Tests.Exchanger.Controllers.HomeController;
 public class GetExchangeRateTests
 {
-    private Exchanger.Controllers.ExchangeController GetController()
+    private ExchangerService.Controllers.ExchangeController GetController()
     {
         var options = new DbContextOptionsBuilder<Context>().UseInMemoryDatabase("Test").Options;
         var context = new Context(options);
@@ -21,7 +21,7 @@ public class GetExchangeRateTests
         configuration["RateLifetimeInCache"].Returns("1800000");
         configuration["MaxCountInPeriod"].Returns("10");
         configuration["ExchangeLimitedPeriodInHours"].Returns("1");
-        var controller = new ExchangerService.Controllers.HomeController(new CachedInformer(informator, configuration), new Converter(operation, configuration));
+        var controller = new ExchangerService.Controllers.ExchangeController(new CachedInformer(informator, configuration), new Converter(operation, configuration));
         return controller;
     }
 
