@@ -1,24 +1,20 @@
-﻿using IntermediateLayer.Builders.JSON.Components.BaseInterface;
-using IntermediateLayer.Builders.JSON.Extends;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Text;
+using ExchangeService.BusinessLogic.Builders.JSON.Components.BaseComponent;
+using ExchangeService.BusinessLogic.Builders.JSON.Extends;
 
-namespace IntermediateLayer.Builders.JSON;
+namespace ExchangeService.BusinessLogic.Builders.JSON;
 public class JSONBuilder
 {
-    protected List<JSONBaseComponent> components = new List<JSONBaseComponent>();
-    protected string builtComponents = "";
+    protected List<JSONBaseComponent> _components = new List<JSONBaseComponent>();
+    protected string _builtComponents = "";
 
    
 
     public virtual StringBuilder Build()
     {
-        string result = builtComponents;
+        string result = _builtComponents;
 
-        foreach (var component in components)
+        foreach (var component in _components)
         {
             result = result.AddJSONComponent(component);
         }
@@ -36,7 +32,7 @@ public class JSONBuilder
             throw new ArgumentNullException(nameof(component));
         }
 
-        components.Add(component);
+        _components.Add(component);
 
         return true;
     }
@@ -47,7 +43,7 @@ public class JSONBuilder
             throw new ArgumentNullException(nameof(name));
         }
 
-        builtComponents = builtComponents.AddJSONComponent(name, value);
+        _builtComponents = _builtComponents.AddJSONComponent(name, value);
 
         return true;
     }

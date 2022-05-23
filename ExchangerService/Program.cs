@@ -1,15 +1,16 @@
-using IntermediateLayer.BussinesLogic.RequestProcess;
 using DataBaseLayer;
+using ExchangerService.DataAccessLayer;
+using ExchangerService.DataAccessLayer.CRUD;
+using ExchangeService.BusinessLogic.BusinessLogic.RequestProcess;
 using Microsoft.EntityFrameworkCore;
-using DataBaseLayer.CRUD;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 var services = builder.Services;
 services.AddRazorPages();
-services.AddScoped<CachedInformator>();
-services.AddScoped<Informator>();
+services.AddScoped<CachedInformer>();
+services.AddScoped<Informer>();
 services.AddScoped<Converter>();
 services.AddScoped<BasicOperation>();
 

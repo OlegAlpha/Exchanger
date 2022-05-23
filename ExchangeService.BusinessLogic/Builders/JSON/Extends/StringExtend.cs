@@ -1,11 +1,7 @@
-﻿using IntermediateLayer.Builders.JSON.Components.BaseInterface;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Text;
+using ExchangeService.BusinessLogic.Builders.JSON.Components.BaseComponent;
 
-namespace IntermediateLayer.Builders.JSON.Extends;
+namespace ExchangeService.BusinessLogic.Builders.JSON.Extends;
 public static class StringExtend
 {
     private static string WrapComponent(string str)

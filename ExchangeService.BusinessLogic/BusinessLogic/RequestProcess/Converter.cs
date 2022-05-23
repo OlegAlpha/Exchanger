@@ -1,16 +1,11 @@
-﻿using DataBaseLayer.Entities;
-using IntermediateLayer.Models;
-using IntermediateLayer.Models.LocalivesAlternatives;
-using IntermediateLayer.Models.StaticObjects;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using DataBaseLayer.CRUD;
+﻿using ExchangerService.DataAccessLayer.CRUD;
+using ExchangerService.DataAccessLayer.Entities;
+using ExchangeService.BusinessLogic.Models.LocalAlternatives;
+using ExchangeService.BusinessLogic.Models.StaticObjects;
+using ExchangeService.BusinessLogic.Models.Story;
 using Microsoft.Extensions.Configuration;
 
-namespace IntermediateLayer.BussinesLogic.RequestProcess;
+namespace ExchangeService.BusinessLogic.BusinessLogic.RequestProcess;
 public class Converter
 {
     private const string MaxCountInPeriodKey = "MaxCountInPeriod";
@@ -25,13 +20,13 @@ public class Converter
         _exchangeLimitedPeriodInHours = Double.Parse(configuration[ExchangeLimitedPeriodKey]);
     }
 
-    private void AddToStory(int UserId, decimal amount, ExchangeRate exchangeRate)
+    private void AddToStory(int userId, decimal amount, ExchangeRate exchangeRate)
     {
-        if (!StaticObjects.Stories.ContainsKey(UserId))
+        if (!StaticObjects.Stories.ContainsKey(userId))
         {
-            UserStory userStory = new UserStory(UserId, _operation);
+            var userStory = new UserStory(userId, _operation);
 
-            StaticObjects.Stories.Add(UserId, userStory);
+            StaticObjects.Stories.Add(userId, userStory);
         }
 
         LocalExchangeStory story = new LocalExchangeStory()
@@ -41,7 +36,7 @@ public class Converter
             Rate = exchangeRate,
         };
 
-        StaticObjects.Stories[UserId].ExchangeStories.Add(story);
+        StaticObjects.Stories[userId].ExchangeStories.Add(story);
     }
 
     private bool CheckCountExchanges(int userId)

@@ -1,11 +1,6 @@
-﻿using DataBaseLayer.Entities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using ExchangerService.DataAccessLayer.Entities;
 
-namespace DataBaseLayer.CRUD;
+namespace ExchangerService.DataAccessLayer.CRUD;
 public class BasicOperation
 {
     private readonly Context _context;
@@ -30,19 +25,19 @@ public class BasicOperation
         return _context.ExchangeRates.FirstOrDefault(predicate);
     }
 
-    public string ReadAbbriviatureAssociation(string abbriviature)
+    public string ReadAbbreviatureAssociation(string abbreviature)
     {
-        if (string.IsNullOrEmpty(abbriviature))
+        if (string.IsNullOrEmpty(abbreviature))
         {
-            throw new ArgumentNullException(nameof(abbriviature));
+            throw new ArgumentNullException(nameof(abbreviature));
         }
 
 
-        CurrencyAssociation result = _context.currencyAssociations?.FirstOrDefault((abbr) => abbr.Abbreviature.Equals(abbriviature));
+        CurrencyAssociation result = _context.CurrencyAssociations?.FirstOrDefault((abbr) => abbr.Abbreviature.Equals(abbreviature));
 
         if (result is null)
         {
-            string message = string.Format("abrriviature {0} is not exist", abbriviature);
+            string message = string.Format("abrriviature {0} is not exist", abbreviature);
             throw new ArgumentException(message);
         }
 

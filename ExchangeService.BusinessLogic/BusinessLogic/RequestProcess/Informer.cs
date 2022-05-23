@@ -1,18 +1,11 @@
-﻿using DataBaseLayer.CRUD;
-using DataBaseLayer.Entities;
-using IntermediateLayer.Models.StaticObjects;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using DataBaseLayer;
+﻿using ExchangerService.DataAccessLayer.CRUD;
+using ExchangerService.DataAccessLayer.Entities;
 
-namespace IntermediateLayer.BussinesLogic.RequestProcess;
-public class Informator
+namespace ExchangeService.BusinessLogic.BusinessLogic.RequestProcess;
+public class Informer
 {
     private readonly BasicOperation _operation;
-    public Informator(BasicOperation operation)
+    public Informer(BasicOperation operation)
     {
         _operation = operation;
     }
@@ -26,7 +19,7 @@ public class Informator
             throw new ArgumentNullException(message);
         }
 
-        ExchangeRate? result = _operation.FindOrDefault(find);
+        ExchangeRate? result = _operation.FindOrDefault(Find);
 
         if(result == null)
         {
@@ -36,7 +29,7 @@ public class Informator
 
         return result;
 
-        bool find(ExchangeRate exchangeRate)
+        bool Find(ExchangeRate exchangeRate)
         {
             if(exchangeRate is null)
             {
@@ -65,7 +58,7 @@ public class Informator
         return _operation.ReadAbbreviatureAssociation(abbreviature);
     }
 
-    public decimal GetExchangeStory(int UserId)
+    public decimal GetExchangeStory(int userId)
     {
         throw new NotImplementedException();
     }

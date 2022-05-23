@@ -1,20 +1,20 @@
-﻿using DataBaseLayer.Entities;
+﻿using System.Collections.Concurrent;
+using ExchangerService.DataAccessLayer.Entities;
 using Microsoft.Extensions.Configuration;
-using System.Collections.Concurrent;
 
-namespace IntermediateLayer.BussinesLogic.RequestProcess
+namespace ExchangeService.BusinessLogic.BusinessLogic.RequestProcess
 {
-    public class CachedInformator
+    public class CachedInformer
     {
-        private const string rateLifetimeKey = "RateLifetimeInCache";
-        private readonly Informator _informator;
+        private const string RateLifetimeKey = "RateLifetimeInCache";
+        private readonly Informer _informer;
         private readonly int _rateLifetimeInCache;
         private static readonly ConcurrentDictionary<ExchangeRate, DateTime> s_cachedRates = new();
 
-        public CachedInformator(Informator informator, IConfiguration configuration)
+        public CachedInformer(Informer informer, IConfiguration configuration)
         {
-            _informator = informator;
-            _rateLifetimeInCache = Int32.Parse(configuration[rateLifetimeKey]);
+            _informer = informer;
+            _rateLifetimeInCache = Int32.Parse(configuration[RateLifetimeKey]);
         }
 
         public ExchangeRate GetExchangeRate(string from, string to, DateTime? date = null)
@@ -23,7 +23,7 @@ namespace IntermediateLayer.BussinesLogic.RequestProcess
 
             if (rate is null || (DateTime.Now - s_cachedRates[rate]).Milliseconds >= _rateLifetimeInCache)
             {
-                var existingRate = _informator.GetExchangeRate(from, to, date) ?? throw new InvalidOperationException();
+                var existingRate = _informer.GetExchangeRate(from, to, date) ?? throw new InvalidOperationException();
 
                 s_cachedRates[existingRate] = DateTime.Now;
 
@@ -35,12 +35,12 @@ namespace IntermediateLayer.BussinesLogic.RequestProcess
 
         public decimal GetExchangeStory(int userId)
         {
-            return _informator.GetExchangeStory(userId);
+            return _informer.GetExchangeStory(userId);
         }
 
         public string GetAbbreviatureName(string abbreviature)
         {
-            return _informator.GetAbbreviatureName(abbreviature);
+            return _informer.GetAbbreviatureName(abbreviature);
         }
     }
 }
