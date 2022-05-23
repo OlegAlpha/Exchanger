@@ -39,10 +39,16 @@ namespace IntermediateLayer.BussinesLogic.RequestProcess
                 var existingRate = _informator.GetExchangeRate(from, to, date);
                 rates ??= new Dictionary<ExchangeRate, DateTime>();
                 rates.Add(existingRate, DateTime.Now);
+                _cache.Set(s_cacheKey, rates);
                 return existingRate;
             }
 
             throw new InvalidOperationException();
+        }
+
+        public decimal GetExchangeStory(int userId)
+        {
+            return _informator.GetExchangeStory(userId);
         }
     }
 }
