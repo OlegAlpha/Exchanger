@@ -9,6 +9,7 @@ using ExchangeService.DataAccessLayer.Entities;
 using ExchangeService.DataAccessLayer.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Newtonsoft.Json;
 using NSubstitute;
 
 namespace ExchangerService.BusinessLogic.Tests
@@ -18,9 +19,14 @@ namespace ExchangerService.BusinessLogic.Tests
     {
         private IHistoryService GetHistoryService()
         {
+            string configurationData = File.ReadAllText("./appsettings.json");
+            Dictionary<string, object> ungroupdepConfigurations = JsonConvert.DeserializeObject<Dictionary<string, object>>(configurationData);
             var configuration = Substitute.For<IConfiguration>();
-            configuration["MaxCountInPeriod"].Returns("10");
-            configuration["ExchangeLimitedPeriodInHours"].Returns("1");
+
+            foreach (KeyValuePair<string, object> kv in ungroupdepConfigurations)
+            {
+                configuration[kv.Key].Returns(kv.Value.ToString());
+            }
 
             var options = new DbContextOptionsBuilder<Context>()
                 .UseInMemoryDatabase("Test")

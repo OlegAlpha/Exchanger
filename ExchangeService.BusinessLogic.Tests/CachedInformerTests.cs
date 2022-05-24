@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using ExchangeService.BusinessLogic.BusinessLogic.RequestProcess;
 using Microsoft.Extensions.Configuration;
+using Newtonsoft.Json;
 using NSubstitute;
 
 namespace ExchangerService.BusinessLogic.Tests
@@ -14,8 +15,14 @@ namespace ExchangerService.BusinessLogic.Tests
     {
         private CacheService GetInformer()
         {
+            string configurationData = File.ReadAllText("./appsettings.json");
+            Dictionary<string, object> ungroupdepConfigurations = JsonConvert.DeserializeObject<Dictionary<string, object>>(configurationData);
             var configuration = Substitute.For<IConfiguration>();
-            configuration["RateLifetimeInCache"].Returns("1800000");
+
+            foreach (KeyValuePair<string, object> kv in ungroupdepConfigurations)
+            {
+                configuration[kv.Key].Returns(kv.Value.ToString());
+            }
             var informer = new CacheService(configuration);
             return informer;
         }
