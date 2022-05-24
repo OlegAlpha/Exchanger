@@ -10,6 +10,6 @@ namespace ExchangeService.DataAccessLayer.Repositories
     public interface IExchangeHistoryRepository
     {
         void Add(ExchangeHistory entity);
-        IEnumerable<ExchangeHistory>? FindByUserIdOrDefault(int userId);
+        Task<IEnumerable<ExchangeHistory>?> FindByUserIdOrDefault(int userId);
     }
 }

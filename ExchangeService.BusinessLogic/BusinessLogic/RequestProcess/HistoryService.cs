@@ -31,9 +31,9 @@ public class HistoryService : IHistoryService
         
     }
 
-    public bool ExchangesCountIsValid(int userId)
+    public async Task<bool> ExchangesCountIsValid(int userId)
     {
-        var history = _repository.FindByUserIdOrDefault(userId);
+        var history = await _repository.FindByUserIdOrDefault(userId);
         var filteredHistory = history.Where((userRate) => (DateTime.UtcNow - userRate.Created).Hours < _exchangeLimitedPeriodInHours);
 
         if (filteredHistory.Count() > _maxCountInPeriod)
@@ -44,9 +44,9 @@ public class HistoryService : IHistoryService
         return true;
     }
 
-    public void StoreExchange(int userId, ExchangeRate rate)
+    public async void StoreExchange(int userId, ExchangeRate rate)
     {
-        if (ExchangesCountIsValid(userId) == false)
+        if ( await ExchangesCountIsValid(userId) == false)
         {
             throw new InvalidOperationException("Too much exchanges.");
         }
