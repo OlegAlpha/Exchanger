@@ -8,6 +8,7 @@ using ExchangeService.BusinessLogic.Builders.JSON.Components;
 using ExchangeService.BusinessLogic.Builders.JSON.Components.BaseComponent;
 using ExchangeService.BusinessLogic.BusinessLogic.RequestProcess;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 using RestSharp;
 
 namespace ExchangerService.Controllers;
@@ -21,19 +22,81 @@ public class ExchangeController : Controller
     private readonly string _apiKey;
 
     private readonly string _apiUrl;
-    //private readonly CachedInformer _informer;
-    //private readonly Converter _converter;
+    private readonly ICachedInformer _informer;
+    private readonly IConverter _converter;
 
-    public ExchangeController(IConfiguration configuration)
+    public ExchangeController(IConfiguration configuration, ICachedInformer informer, IConverter converter)
     {
         _apiKey = configuration[ApiConfigurationKey];
         _apiUrl = configuration[ApiUrlKey];
+        _informer = informer;
+        _converter = converter;
     }
 
     [HttpGet]
-    [Route("convert")]
+    [Route("exchange")]
+    public async Task<string> Exchange(int userId, decimal amount, string from, string to)
+    {
+        string result;
+        try
+        {
+            if (!_informer.IsCreatedExchangeRate(from, to))
+            {
+                var client = new RestClient($"https://api.apilayer.com/fixer/convert?to={to}&from={from}&amount={amount}");
+                var request = new RestRequest();
+                request.Method = Method.Get;
+                request.AddHeader("apikey", "cRT0hBKu4TtHVhEDiOpoV78CW8Jcgr3c");
+                RestResponse response = await client.ExecuteGetAsync(request);
+
+                _informer.SetExchangeRate(from, to, response.Content);
+                ExchangeRate exchangeRate = _informer.GetExchangeRate(from, to);
+                _converter.Exchange(userId, exchangeRate);
+                result = response.Content.ToString();
+            }
+            else
+            {
+                ExchangeRate exchangeRate = _informer.GetExchangeRate(from, to);
+                _converter.Exchange(userId, exchangeRate);
+                dynamic convertedResponse = JsonConvert.DeserializeObject<dynamic>(exchangeRate.CachedResponse);
+                convertedResponse.result = decimal.Parse(convertedResponse.info.rate.ToString()) * amount;
+                convertedResponse.result = convertedResponse.query.amount = amount;
+
+                result = JsonConvert.SerializeObject(convertedResponse.result);
+            }
+        }
+        catch
+        {
+            result = "\"success\":\"false\"";
+        }
+
+        return result;
+    }
+
+    [HttpGet]
+    [Route("latest")]
     public async Task<string?> GetLatestRates(string? @base, string? symbols)
     {
+        var toCurrencies = symbols?.Split(',').ToList();
+        var ratesComponent = new JSONBaseComponent("rates");
+
+        toCurrencies?.ForEach(currency =>
+        {
+            var rate = _informer.GetExchangeRate(@base, currency);
+            if (rate is null)
+            {
+                return;
+            }
+
+            //ratesComponent.AddComponent(currency, rate.)
+
+            if (_informer.IsCreatedExchangeRate(@base, currency))
+            {
+                ratesComponent.AddComponent(currency, _informer.GetExchangeRate(currency))
+                toCurrencies.Remove(currency);
+            }
+        });
+
+        symbols = String.Join(",", toCurrencies);
         var urlBuilder = new StringBuilder($"{_apiUrl}/latest?")
             .AppendIf($"symbols={symbols}", symbols is not null);
         urlBuilder.AppendIf("&", urlBuilder.ToString().Contains("symbols"))
@@ -48,7 +111,7 @@ public class ExchangeController : Controller
 
     [HttpGet]
     [Route("symbols?")]
-    public async Task<string> GetAvailableCurrencies()
+    public async Task<string?> GetAvailableCurrencies()
     {
         var client = new RestClient($"{_apiUrl}/symbols");
         var request = new RestRequest();
@@ -75,16 +138,7 @@ public class ExchangeController : Controller
         var response = await client.ExecuteAsync(request);
         return response.Content;
     }
-
-    [HttpGet]
-    [Route("{date}")]
-    public async Task<string?> GetRatesForDate(DateTime date, string? @base, string? symbols)
-    {
-        var urlBuilder = new StringBuilder(_apiUrl)
-            .Append($"/{date.ToString("MM/dd/yyyy")}?")
-            .AppendIf($"base={@base}&", @base is not null)
-            .AppendIf($"symbols={symbols}", symbols is not null);
-    }
+   
     //[HttpGet]
     //[Route("exchangeRate")]
     //public string GetExchangeRate(string baseCurrency, string[] currencies, DateTime? date = null)

@@ -6,7 +6,8 @@ using ExchangeService.BusinessLogic.Models.Story;
 using Microsoft.Extensions.Configuration;
 
 namespace ExchangeService.BusinessLogic.BusinessLogic.RequestProcess;
-public class Converter
+
+public class Converter : IConverter
 {
     private const string MaxCountInPeriodKey = "MaxCountInPeriod";
     private const string ExchangeLimitedPeriodKey = "ExchangeLimitedPeriodInHours";
@@ -20,7 +21,7 @@ public class Converter
         _exchangeLimitedPeriodInHours = Double.Parse(configuration[ExchangeLimitedPeriodKey]);
     }
 
-    private void AddToStory(int userId, decimal amount, ExchangeRate exchangeRate)
+    public void AddToStory(int userId, ExchangeRate exchangeRate)
     {
         if (!StaticObjects.Stories.ContainsKey(userId))
         {
@@ -31,7 +32,6 @@ public class Converter
 
         LocalExchangeStory story = new LocalExchangeStory()
         {
-            Amount = amount,
             Created = DateTime.UtcNow,
             Rate = exchangeRate,
         };
@@ -39,7 +39,7 @@ public class Converter
         StaticObjects.Stories[userId].ExchangeStories.Add(story);
     }
 
-    private bool CheckCountExchanges(int userId)
+    public bool CheckCountExchanges(int userId)
     {
         if (StaticObjects.Stories.ContainsKey(userId) == false)
         {
@@ -62,18 +62,9 @@ public class Converter
         return true;
     }
 
-    public decimal Exchange(int userId, decimal amount, ExchangeRate rate)
+    public void Exchange(int userId, ExchangeRate rate)
     {
-        if (amount < 0)
-        {
-            throw new ArgumentException($"amount for exchange lower then 0 (amount = {amount})");
-        }
-
         CheckCountExchanges(userId);
-
-        decimal result = rate.Rate * amount;
-        AddToStory(userId, amount, rate);
-
-        return result;
+        AddToStory(userId, rate);
     }
 }
