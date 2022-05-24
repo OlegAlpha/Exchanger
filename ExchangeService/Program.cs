@@ -10,7 +10,7 @@ var builder = WebApplication.CreateBuilder(args);
 var services = builder.Services;
 services.AddRazorPages();
 services.AddScoped<ICacheService, CacheService>();
-services.AddScoped<IStoryService, StoryService>();
+services.AddScoped<IHistoryService, HistoryService>();
 services.AddScoped<IExchangeHistoryRepository, ExchangeHistoryRepository>();
 
 var configuration = builder.Configuration;

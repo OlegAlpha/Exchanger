@@ -5,21 +5,21 @@ namespace ExchangeService.DataAccessLayer.Repositories;
 public class ExchangeHistoryRepository : IExchangeHistoryRepository
 {
     private readonly Context _context;
-    private readonly DbSet<ExchangeStory> _exchangeStories;
+    private readonly DbSet<ExchangeHistory> _exchangeHistories;
     public ExchangeHistoryRepository(Context context)
     {
         _context = context;
-        _exchangeStories = _context.Set<ExchangeStory>();
+        _exchangeHistories = _context.Set<ExchangeHistory>();
     }
 
-    public void Add(ExchangeStory entity)
+    public void Add(ExchangeHistory entity)
     {
-        _exchangeStories.Add(entity);
+        _exchangeHistories.Add(entity);
         _context.SaveChanges();
     }
 
-    public ExchangeStory? FindByUserIdOrDefault(int userId)
+    public ExchangeHistory? FindByUserIdOrDefault(int userId)
     {
-        return _exchangeStories.FirstOrDefault(x => x.UserId == userId);
+        return _exchangeHistories.FirstOrDefault(x => x.UserId == userId);
     }
 }

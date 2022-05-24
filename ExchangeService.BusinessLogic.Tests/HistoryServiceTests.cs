@@ -5,8 +5,8 @@ using System.Text;
 using System.Threading.Tasks;
 using ExchangeService.BusinessLogic.BusinessLogic.RequestProcess;
 using ExchangeService.DataAccessLayer;
-using ExchangeService.DataAccessLayer.CRUD;
 using ExchangeService.DataAccessLayer.Entities;
+using ExchangeService.DataAccessLayer.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using NSubstitute;
@@ -26,9 +26,9 @@ namespace ExchangerService.BusinessLogic.Tests
                 .UseInMemoryDatabase("Test")
                 .Options;
             var context = new Context(options);
-            var operation = new ExchangeHistoryRepository(context);
+            var repository = new ExchangeHistoryRepository(context);
 
-            return new HistoryService(operation, configuration);
+            return new HistoryService(repository, configuration);
         }
 
         [Test]

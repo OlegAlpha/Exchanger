@@ -8,12 +8,12 @@ public class UserHistory
 {
     public int Id { get; }
     private readonly IExchangeHistoryRepository _repository;
-    public ObservableCollection<LocalExchangeStory> ExchangeStories { get; set; }
+    public ObservableCollection<LocalExchangeHistory> ExchangeStories { get; set; }
 
     public UserHistory(int id, IExchangeHistoryRepository repository)
     {
         this.Id = id;
-        ExchangeStories = new ObservableCollection<LocalExchangeStory>();
+        ExchangeStories = new ObservableCollection<LocalExchangeHistory>();
         _repository = repository;
 
         ExchangeStories.CollectionChanged += ExchangeStories_CollectionChanged;
@@ -26,7 +26,7 @@ public class UserHistory
             case System.Collections.Specialized.NotifyCollectionChangedAction.Add:
                 {
 
-                    foreach (LocalExchangeHitory item in e.NewItems)
+                    foreach (LocalExchangeHistory item in e.NewItems)
                     {
                         ExchangeHistory exchangeHistory = new ExchangeHistory()
                         {

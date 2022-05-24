@@ -14,7 +14,7 @@ public class HistoryService : IHistoryService
     private readonly double _exchangeLimitedPeriodInHours;
     private readonly double _maxCountInPeriod;
     private readonly IExchangeHistoryRepository _repository;
-    public StoryService(IExchangeHistoryRepository repository, IConfiguration configuration)
+    public HistoryService(IExchangeHistoryRepository repository, IConfiguration configuration)
     {
         _repository = repository;
         _maxCountInPeriod = Double.Parse(configuration[MaxCountInPeriodKey]);
@@ -30,7 +30,7 @@ public class HistoryService : IHistoryService
             StaticObjects.Stories.Add(userId, userHistory);
         }
 
-        LocalExchangeHitory history = new LocalExchangeHitory()
+        LocalExchangeHistory history = new LocalExchangeHistory()
         {
             Created = DateTime.UtcNow,
             Rate = exchangeRate,
@@ -43,13 +43,13 @@ public class HistoryService : IHistoryService
     {
         if (StaticObjects.Stories.ContainsKey(userId) == false)
         {
-            StaticObjects.Stories[userId] = new UserStory(userId, _operation);
+            StaticObjects.Stories[userId] = new UserHistory(userId, _repository);
         }
 
-        IEnumerable<LocalExchangeHitory> history
+        IEnumerable<LocalExchangeHistory> history
             = StaticObjects.Stories[userId].ExchangeStories.Where(history => (DateTime.UtcNow - history.Created).Hours >= _exchangeLimitedPeriodInHours);
 
-        foreach (LocalExchangeHitory historyItem in history)
+        foreach (LocalExchangeHistory historyItem in history)
         {
             StaticObjects.Stories[userId].ExchangeStories.Remove(historyItem);
         }
