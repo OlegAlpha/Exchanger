@@ -37,7 +37,7 @@ public class UserStory
                             Created = DateTime.UtcNow,
                         };
 
-                        _operation.AddAsync(exchangeStory);
+                       _operation.Add(exchangeStory);
                     }
                 }
                 break;

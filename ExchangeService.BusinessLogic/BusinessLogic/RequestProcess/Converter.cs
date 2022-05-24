@@ -20,7 +20,7 @@ public class Converter
         _exchangeLimitedPeriodInHours = Double.Parse(configuration[ExchangeLimitedPeriodKey]);
     }
 
-    private void AddToStory(int userId, decimal amount, ExchangeRate exchangeRate)
+    private void AddToStory(int userId, ExchangeRate exchangeRate)
     {
         if (!StaticObjects.Stories.ContainsKey(userId))
         {
@@ -31,7 +31,6 @@ public class Converter
 
         LocalExchangeStory story = new LocalExchangeStory()
         {
-            Amount = amount,
             Created = DateTime.UtcNow,
             Rate = exchangeRate,
         };
@@ -62,21 +61,9 @@ public class Converter
         return true;
     }
 
-    public decimal Exchange(int userId, decimal amount, ExchangeRate rate)
+    public void Exchange(int userId, ExchangeRate rate)
     {
-        if (amount < 0)
-        {
-            string message = string.Format("amount for exchange lower then 0 (amount = {0})", amount);
-            throw new ArgumentException(message);
-        }
-
         CheckCountExchanges(userId);
-
-        decimal result;
-
-        result = rate.Rate * amount;
-        AddToStory(userId, amount, rate);
-
-        return result;
+        AddToStory(userId, rate);        
     }
 }

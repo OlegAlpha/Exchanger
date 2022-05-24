@@ -5,6 +5,8 @@ using ExchangeService.BusinessLogic.Builders.JSON.Components;
 using ExchangeService.BusinessLogic.Builders.JSON.Components.BaseComponent;
 using ExchangeService.BusinessLogic.BusinessLogic.RequestProcess;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
+using RestSharp;
 
 namespace ExchangerService.Controllers;
 [ApiController]
@@ -58,36 +60,41 @@ public class ExchangeController : Controller
 
     [HttpGet]
     [Route("exchange")]
-    public string Exchange(int userId, decimal amount, string from, string to)
+    public async Task<string> Exchange(int userId, decimal amount, string from, string to)
     {
-        decimal result = 0;
-        ExchangeRate exchangeRate = new();
-        Stopwatch timer = new();
-        bool isSuccess = true;
-
-        timer.Start();
+        string result;
         try
         {
-            exchangeRate = _informer.GetExchangeRate(from, to);
-            result = _converter.Exchange(userId, amount, exchangeRate);
+            if (!_informer.IsCreatedExchangeRate(from, to))
+            {
+                var client = new RestClient($"https://api.apilayer.com/fixer/convert?to={to}&from={from}&amount={amount}");
+                var request = new RestRequest();
+                request.Method = Method.Get;
+                request.AddHeader("apikey", "cRT0hBKu4TtHVhEDiOpoV78CW8Jcgr3c");
+                RestResponse response = await client.ExecuteGetAsync(request);
+
+                _informer.SetExchangeRate(from, to, response.Content);
+                ExchangeRate exchangeRate = _informer.GetExchangeRate(from, to);
+                _converter.Exchange(userId, exchangeRate);
+                result = response.Content.ToString();
+            }
+            else
+            {
+                ExchangeRate exchangeRate = _informer.GetExchangeRate(from, to);
+                _converter.Exchange(userId, exchangeRate);
+                dynamic convertedResponse = JsonConvert.DeserializeObject<dynamic>(exchangeRate.CachedResponse);
+                convertedResponse.result = decimal.Parse(convertedResponse.info.rate.ToString()) * amount;
+                convertedResponse.result = convertedResponse.query.amount = amount;
+
+                result = JsonConvert.SerializeObject(convertedResponse.result);
+            }
         }
         catch
         {
-            isSuccess = false;
+            result = "\"success\":\"false\"";
         }
 
-        timer.Stop();
-
-        QueryComponent query = new(exchangeRate?.From, exchangeRate?.To);
-        InfoComponent info = new(timer.ElapsedMilliseconds, false);
-        ExchangeResponse response = new(DateTime.UtcNow.Date, info, isSuccess, result);
-
-        response.AddComponent(query);
-        query.AddComponent("amount", amount.ToString());
-        info.AddComponent("rate", exchangeRate?.Rate.ToString());
-        response.AddComponent("rate", exchangeRate?.Rate.ToString());
-
-        return response.Build().ToString();
+        return result;
     }
     [HttpGet]
     [Route("fluctuation")]
@@ -138,7 +145,6 @@ public class ExchangeController : Controller
     {
         bool isSuccess = true;
         Stopwatch timer = new();
-        ExchangeRate exchangeRate;
         JSONBaseComponent dates;
         JSONBaseComponent rates = new("rates");
 
@@ -151,7 +157,7 @@ public class ExchangeController : Controller
 
                 foreach (var currency in currencies)
                 {
-                    exchangeRate = _informer.GetExchangeRate(baseCurrency, currency, current);
+                    ExchangeRate exchangeRate = _informer.GetExchangeRate(baseCurrency, currency, current);
                     dates.AddComponent(currency, exchangeRate.Rate.ToString());
                 }
 
@@ -182,16 +188,14 @@ public class ExchangeController : Controller
         bool isSuccess = true;
         Stopwatch stopwatch = new();
         JSONBaseComponent symbols = new("symbols");
-        ExchangeResponse response;
         InfoComponent info;
-        string abbreviatureName;
         stopwatch.Start();
 
         try
         {
             foreach (string abbreviature in abbreviatures)
             {
-                abbreviatureName = _informer.GetAbbreviatureName(abbreviature);
+                string abbreviatureName = _informer.GetAbbreviatureName(abbreviature);
                 symbols.AddComponent(abbreviature, abbreviatureName);
             }
         }
@@ -203,7 +207,7 @@ public class ExchangeController : Controller
         stopwatch.Stop();
 
         info = new InfoComponent(stopwatch.ElapsedMilliseconds);
-        response = new ExchangeResponse(DateTime.UtcNow.Date, info, isSuccess);
+        ExchangeResponse response = new ExchangeResponse(DateTime.UtcNow.Date, info, isSuccess);
         response.AddComponent(symbols);
 
         return response.Build().ToString();

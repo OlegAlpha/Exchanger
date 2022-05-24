@@ -17,30 +17,40 @@ namespace ExchangeService.BusinessLogic.BusinessLogic.RequestProcess
             _rateLifetimeInCache = Int32.Parse(configuration[RateLifetimeKey]);
         }
 
-        public ExchangeRate GetExchangeRate(string from, string to, DateTime? date = null)
+        public bool IsCreatedExchangeRate(string from, string to)
         {
             var rate = s_cachedRates.Keys.FirstOrDefault(r => r.From == from && r.To == to);
 
-            if (rate is null || (DateTime.Now - s_cachedRates[rate]).Milliseconds >= _rateLifetimeInCache)
+            if (rate is null || (DateTime.UtcNow - s_cachedRates[rate]).Milliseconds >= _rateLifetimeInCache)
             {
-                var existingRate = _informer.GetExchangeRate(from, to, date) ?? throw new InvalidOperationException();
+                return false;
+            }
 
-                s_cachedRates[existingRate] = DateTime.Now;
+            return true;
+        }
 
-                return existingRate;
+        public ExchangeRate? GetExchangeRate(string from, string to)
+        {
+            var rate = s_cachedRates.Keys.FirstOrDefault(r => r.From == from && r.To == to);
+
+            if (rate is null || (DateTime.UtcNow - s_cachedRates[rate]).Milliseconds >= _rateLifetimeInCache)
+            {
+                return null;
             }
 
             return rate;
         }
 
-        public decimal GetExchangeStory(int userId)
+        public void SetExchangeRate(string from, string to, string cachedResponse)
         {
-            return _informer.GetExchangeStory(userId);
-        }
+            var exchangeRate = new ExchangeRate()
+            {
+                From = from,
+                To = to,
+                CachedResponse = cachedResponse,
+            };
 
-        public string GetAbbreviatureName(string abbreviature)
-        {
-            return _informer.GetAbbreviatureName(abbreviature);
+            s_cachedRates[exchangeRate] = DateTime.UtcNow;
         }
     }
 }
