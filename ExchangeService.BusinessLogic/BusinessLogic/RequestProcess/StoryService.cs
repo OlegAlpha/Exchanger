@@ -1,8 +1,8 @@
-﻿using ExchangerService.DataAccessLayer.CRUD;
-using ExchangerService.DataAccessLayer.Entities;
-using ExchangeService.BusinessLogic.Models.LocalAlternatives;
+﻿using ExchangeService.BusinessLogic.Models.LocalAlternatives;
 using ExchangeService.BusinessLogic.Models.StaticObjects;
 using ExchangeService.BusinessLogic.Models.Story;
+using ExchangeService.DataAccessLayer.CRUD;
+using ExchangeService.DataAccessLayer.Entities;
 using Microsoft.Extensions.Configuration;
 
 namespace ExchangeService.BusinessLogic.BusinessLogic.RequestProcess;
@@ -21,7 +21,7 @@ public class StoryService : IStoryService
         _exchangeLimitedPeriodInHours = Double.Parse(configuration[ExchangeLimitedPeriodKey]);
     }
 
-    public void AddToStory(int userId, ExchangeRate exchangeRate)
+    private void AddToStory(int userId, ExchangeRate exchangeRate)
     {
         if (!StaticObjects.Stories.ContainsKey(userId))
         {
@@ -39,7 +39,7 @@ public class StoryService : IStoryService
         StaticObjects.Stories[userId].ExchangeStories.Add(story);
     }
 
-    public bool CheckCountExchanges(int userId)
+    public bool ExchangesCountIsValid(int userId)
     {
         if (StaticObjects.Stories.ContainsKey(userId) == false)
         {
@@ -56,15 +56,18 @@ public class StoryService : IStoryService
 
         if (StaticObjects.Stories[userId].ExchangeStories.Count() > _maxCountInPeriod)
         {
-            throw new Exception("Too much exchanges");
+            return false;
         }
 
         return true;
     }
 
-    public void Exchange(int userId, ExchangeRate rate)
+    public void StoreExchange(int userId, ExchangeRate rate)
     {
-        CheckCountExchanges(userId);
+        if (ExchangesCountIsValid(userId) == false)
+        {
+            throw new InvalidOperationException("Too much exchanges.");
+        }
         AddToStory(userId, rate);
     }
 }

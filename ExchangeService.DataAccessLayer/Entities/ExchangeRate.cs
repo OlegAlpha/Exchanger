@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace ExchangerService.DataAccessLayer.Entities;
+namespace ExchangeService.DataAccessLayer.Entities;
 public class ExchangeRate
 {
     [Key]
@@ -9,7 +9,7 @@ public class ExchangeRate
     public string To { get; set; }
     public decimal Rate { get; set; }
     public DateTime? Date { get; set; }
-    public object CachedResponse { get; set; }
+    //public object CachedResponse { get; set; }
 
     public override int GetHashCode()
     {

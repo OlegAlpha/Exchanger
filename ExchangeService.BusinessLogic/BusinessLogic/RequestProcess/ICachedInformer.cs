@@ -1,4 +1,4 @@
-﻿using ExchangerService.DataAccessLayer.Entities;
+﻿using ExchangeService.DataAccessLayer.Entities;
 
 namespace ExchangeService.BusinessLogic.BusinessLogic.RequestProcess;
 

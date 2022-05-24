@@ -1,7 +1,7 @@
 using DataBaseLayer;
-using ExchangerService.DataAccessLayer;
-using ExchangerService.DataAccessLayer.CRUD;
 using ExchangeService.BusinessLogic.BusinessLogic.RequestProcess;
+using ExchangeService.DataAccessLayer;
+using ExchangeService.DataAccessLayer.CRUD;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -10,7 +10,7 @@ var builder = WebApplication.CreateBuilder(args);
 var services = builder.Services;
 services.AddRazorPages();
 services.AddScoped<ICachedInformer, CachedInformer>();
-services.AddScoped<IConverter, Converter>();
+services.AddScoped<IStoryService, StoryService>();
 services.AddScoped<BasicOperation>();
 
 var configuration = builder.Configuration;

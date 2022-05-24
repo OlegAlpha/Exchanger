@@ -1,12 +1,10 @@
-﻿using ExchangerService.DataAccessLayer.Entities;
+﻿using ExchangeService.DataAccessLayer.Entities;
 using Microsoft.EntityFrameworkCore;
 
-namespace ExchangerService.DataAccessLayer;
+namespace ExchangeService.DataAccessLayer;
 public class Context: DbContext
 {
     public DbSet<ExchangeStory> ExchangeStories { get; set; }
-    public DbSet<ExchangeRate> ExchangeRates { get; set; }
-    public DbSet<CurrencyAssociation> CurrencyAssociations { get; set; }
 
     public Context(DbContextOptions options) : base (options)
     {

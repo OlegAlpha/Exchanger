@@ -1,18 +1,13 @@
-﻿using System.Diagnostics;
-using System.Net;
-using System.Text;
-using ExchangerService.DataAccessLayer.Entities;
-using ExchangeService;
-using ExchangeService.BusinessLogic.Builders.JSON;
-using ExchangeService.BusinessLogic.Builders.JSON.Components;
+﻿using System.Text;
 using ExchangeService.BusinessLogic.Builders.JSON.Components.BaseComponent;
 using ExchangeService.BusinessLogic.BusinessLogic.RequestProcess;
 using ExchangeService.BusinessLogic.Context;
+using ExchangeService.DataAccessLayer.Entities;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using RestSharp;
 
-namespace ExchangerService.Controllers;
+namespace ExchangeService.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 public class ExchangeController : Controller
@@ -84,7 +79,6 @@ public class ExchangeController : Controller
     public async Task<string?> GetLatestRates(string? @base, string? symbols)
     {
         var toCurrencies = symbols?.Split(',').ToList();
-        var ratesComponent = new JSONBaseComponent("rates");
         var currencies = new Dictionary<string, decimal>();
         toCurrencies?.ForEach(currency =>
         {

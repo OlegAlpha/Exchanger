@@ -1,10 +1,9 @@
-﻿using ExchangerService.DataAccessLayer.Entities;
+﻿using ExchangeService.DataAccessLayer.Entities;
 
 namespace ExchangeService.BusinessLogic.BusinessLogic.RequestProcess;
 
-public interface IConverter
+public interface IStoryService
 {
-    void AddToStory(int userId, ExchangeRate exchangeRate);
-    bool CheckCountExchanges(int userId);
-    void Exchange(int userId, ExchangeRate rate);
+    bool ExchangesCountIsValid(int userId);
+    void StoreExchange(int userId, ExchangeRate rate);
 }

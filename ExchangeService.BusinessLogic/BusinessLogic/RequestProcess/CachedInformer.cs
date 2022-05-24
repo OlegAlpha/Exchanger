@@ -1,5 +1,5 @@
 ﻿using System.Collections.Concurrent;
-using ExchangerService.DataAccessLayer.Entities;
+using ExchangeService.DataAccessLayer.Entities;
 using Microsoft.Extensions.Configuration;
 
 namespace ExchangeService.BusinessLogic.BusinessLogic.RequestProcess
@@ -67,7 +67,7 @@ namespace ExchangeService.BusinessLogic.BusinessLogic.RequestProcess
                 Rate = rate
             };
 
-            s_cachedRates[exchangeRate] = DateTime.UtcNow;
+            s_cachedRates[exchangeRate] = exchangeRate.Date;
         }
     }
 }

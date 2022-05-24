@@ -1,7 +1,7 @@
 ﻿using System.Collections.ObjectModel;
-using ExchangerService.DataAccessLayer.CRUD;
-using ExchangerService.DataAccessLayer.Entities;
 using ExchangeService.BusinessLogic.Models.LocalAlternatives;
+using ExchangeService.DataAccessLayer.CRUD;
+using ExchangeService.DataAccessLayer.Entities;
 
 namespace ExchangeService.BusinessLogic.Models.Story;
 public class UserStory
