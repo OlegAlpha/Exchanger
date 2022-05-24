@@ -212,5 +212,14 @@ namespace ExchangeService.BusinessLogic.BusinessLogic.RequestProcess
 
             return responseBody;
         }
+
+        public async Task<string> GetAvailableCurrencies()
+        {
+            var client = new RestClient($"{_apiUrl}/symbols");
+            var request = new RestRequest();
+            request.AddHeader(ApiKeyHeader, _apiKey);
+            var response = await client.ExecuteAsync(request);
+            return response.Content;
+        }
     }
 }
