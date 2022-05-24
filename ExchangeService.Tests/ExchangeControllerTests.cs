@@ -9,6 +9,7 @@ using ExchangeService.Controllers;
 using ExchangeService.DataAccessLayer;
 using ExchangeService.DataAccessLayer.Entities;
 using ExchangeService.DataAccessLayer.Repositories;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
@@ -21,13 +22,14 @@ namespace ExchangeService.Tests
     {
         private ExchangeController GetController()
         {
+            string configurationData = File.ReadAllText("./appsettings.json");
+            Dictionary<string, object> ungroupdepConfigurations = JsonConvert.DeserializeObject<Dictionary<string, object>>(configurationData);
             var configuration = Substitute.For<IConfiguration>();
-            configuration["API_KEY"].Returns("cRT0hBKu4TtHVhEDiOpoV78CW8Jcgr3c");
-            configuration["API_URL"].Returns("https://api.apilayer.com/fixer");
-            configuration["RateLifetimeInCache"].Returns("1800000");
-            configuration["MaxCountInPeriod"].Returns("10");
-            configuration["ExchangeLimitedPeriodInHours"].Returns("1");
 
+            foreach(KeyValuePair<string, object> kv in ungroupdepConfigurations)
+            {
+                configuration[kv.Key].Returns( kv.Value.ToString());
+            }
             var cache = new CacheService(configuration);
             var options = new DbContextOptionsBuilder<Context>()
                 .UseInMemoryDatabase("Test")

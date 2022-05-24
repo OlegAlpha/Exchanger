@@ -12,14 +12,14 @@ public class ExchangeHistoryRepository : IExchangeHistoryRepository
         _exchangeHistories = _context.Set<ExchangeHistory>();
     }
 
-    public void Add(ExchangeHistory entity)
+    public async void Add(ExchangeHistory entity)
     {
-        _exchangeHistories.Add(entity);
-        _context.SaveChanges();
+        await _exchangeHistories.AddAsync(entity);
+        await _context.SaveChangesAsync();
     }
 
-    public ExchangeHistory? FindByUserIdOrDefault(int userId)
+    public  async Task<IEnumerable<ExchangeHistory>?> FindByUserIdOrDefault(int userId)
     {
-        return _exchangeHistories.FirstOrDefault(x => x.UserId == userId);
+        return await _exchangeHistories.Where(x => x.UserId == userId).ToListAsync();
     }
 }

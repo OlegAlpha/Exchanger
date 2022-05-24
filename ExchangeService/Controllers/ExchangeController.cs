@@ -37,7 +37,9 @@ public class ExchangeController : ControllerBase
         {
             if (!_cacheService.IsCreatedExchangeRate(from, to))
             {
-                var client = new RestClient($"https://api.apilayer.com/fixer/convert?to={to}&from={from}&amount={amount}");
+                string url = new StringBuilder(_apiUrl).Append("/convert?")
+                    .Append($"to={to}").Append($"&from={from}").Append($"&amount={amount}").ToString();
+                var client = new RestClient($"{_apiUrl}/convert?to={to}&from={from}&amount={amount}");
                 var request = new RestRequest();
                 request.Method = Method.Get;
                 request.AddHeader(ApiKeyHeader, _apiKey);
