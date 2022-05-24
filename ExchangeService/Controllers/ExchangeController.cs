@@ -63,7 +63,7 @@ public class ExchangeController : Controller
                     to
                 };
                 responseBody.Success = true;
-                responseBody.Date = exchangeRate.Date.ToString("MM/dd/yyyy");
+                responseBody.Date = exchangeRate.Date.xToString("MM/dd/yyyy");
             }
         }
         catch
@@ -140,19 +140,68 @@ public class ExchangeController : Controller
     [Route("timeseries")]
     public async Task<string?> GetRatesWithin(DateTime endDate, DateTime startDate, string? @base, string? symbols)
     {
-        var urlBuilder = new StringBuilder(_apiUrl)
-            .Append($"/timeseries?end_date={endDate.ToString("MM/dd/yyyy")}")
-            .Append($"&start_date={startDate.ToString("MM/dd/yyyy")}")
-            .AppendIf($"&base={@base}", @base is not null)
-            .AppendIf($"&symbols={symbols}", symbols is not null);
+        string[] currencies = symbols.Split(',');
+        bool isAllCached = true; 
+        for (var i = startDate; i < endDate; i = i.AddDays(1))
+        {
+            foreach (var currency in currencies)
+            {
+                if (!_informer.IsCreatedExchangeRate(@base, currency, i))
+                {
+                    isAllCached = false;
+                    break;
+                }
+            }
+        }
 
-        var client = new RestClient(urlBuilder.ToString());
+        if (!isAllCached)
+        {
+            var urlBuilder = new StringBuilder(_apiUrl)
+                .Append($"/timeseries?end_date={endDate.ToString("MM/dd/yyyy")}")
+                .Append($"&start_date={startDate.ToString("MM/dd/yyyy")}")
+                .AppendIf($"&base={@base}", @base is not null)
+                .AppendIf($"&symbols={symbols}", symbols is not null);
 
-        var request = new RestRequest();
-        request.AddHeader(ApiKeyHeader, "GSUSaL15VGITPxaUApRmfje7H9bII7rj");
+            var client = new RestClient(urlBuilder.ToString());
 
-        var response = await client.ExecuteAsync(request);
-        return response.Content;
+            var request = new RestRequest();
+            request.AddHeader(ApiKeyHeader, "GSUSaL15VGITPxaUApRmfje7H9bII7rj");
+
+            var response = await client.ExecuteAsync(request);
+            return response.Content;
+        }
+
+        Response responseBody = new Response()
+        {
+             Base = @base,
+             EndDate =  endDate.ToString("yyyy-MM-dd"),
+             StartDate = startDate.ToString("yyyy-MM-dd"),
+             TimeSeries = true,
+        };
+
+
+        for (var i = startDate; i < endDate; i = i.AddDays(1))
+        {
+            string ratesJsonObject = "{";
+
+            foreach (var currency in currencies)
+            {
+                ExchangeRate rate = _informer.GetExchangeRateOrDefault(@base, currency, i);
+                string rateJson = string.Format("\"{0}\":{1},", currency, rate.Rate.ToString());
+                ratesJsonObject = string.Concat(ratesJsonObject, rate);
+            }
+
+            ratesJsonObject = ratesJsonObject.Substring(0,ratesJsonObject.Length - 1);
+            ratesJsonObject = string.Concat(ratesJsonObject, "},");
+            responseBody.Rates[i.ToString("yyyy-MM-dd")] = ratesJsonObject;
+        }
+
+        responseBody.Rates[endDate.ToString("yyyy-MM-dd")] = 
+            responseBody.Rates[endDate.ToString("yyyy-MM-dd")]
+            .Substring(0, responseBody.Rates[endDate.ToString("yyyy-MM-dd")].Length - 1);
+
+        return JsonConvert.SerializeObject(responseBody);
+
     }
 
     [HttpGet]
