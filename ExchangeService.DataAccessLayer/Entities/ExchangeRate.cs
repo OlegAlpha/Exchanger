@@ -8,7 +8,7 @@ public class ExchangeRate
     public string From { get; set; }
     public string To { get; set; }
     public decimal Rate { get; set; }
-    public DateTime Date { get; set; }
+    public DateTime? Date { get; set; }
     public object CachedResponse { get; set; }
 
     public override int GetHashCode()

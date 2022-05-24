@@ -4,7 +4,7 @@ namespace ExchangeService.BusinessLogic.BusinessLogic.RequestProcess;
 
 public interface ICachedInformer
 {
-    bool IsCreatedExchangeRate(string from, string to);
-    ExchangeRate? GetExchangeRate(string from, string to);
-    void SetExchangeRate(string from, string to, decimal rate);
+    bool IsCreatedExchangeRate(string from, string to, DateTime? date = null);
+    ExchangeRate? GetExchangeRateOrDefault(string from, string to, DateTime? date = null);
+    void SetExchangeRate(string from, string to, decimal rate, DateTime? date = null);
 }

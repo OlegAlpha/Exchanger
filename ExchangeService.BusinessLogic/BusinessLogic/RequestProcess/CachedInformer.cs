@@ -15,9 +15,18 @@ namespace ExchangeService.BusinessLogic.BusinessLogic.RequestProcess
             _rateLifetimeInCache = Int32.Parse(configuration[RateLifetimeKey]);
         }
 
-        public bool IsCreatedExchangeRate(string from, string to)
+        public bool IsCreatedExchangeRate(string from, string to, DateTime? date = null)
         {
-            var rate = s_cachedRates.Keys.FirstOrDefault(r => r.From == from && r.To == to);
+            ExchangeRate? rate;
+
+            if(date is null)
+            {
+                rate = s_cachedRates.Keys.FirstOrDefault(r => r.From == from && r.To == to);
+            }
+            else
+            {
+                rate = s_cachedRates.Keys.FirstOrDefault(r => r.From == from && r.To == to && r.Date.HasValue && (r.Date - date).Value.Days == 0);
+            }
 
             if (rate is null || (DateTime.UtcNow - s_cachedRates[rate]).Milliseconds >= _rateLifetimeInCache)
             {
@@ -27,9 +36,18 @@ namespace ExchangeService.BusinessLogic.BusinessLogic.RequestProcess
             return true;
         }
 
-        public ExchangeRate? GetExchangeRate(string from, string to)
+        public ExchangeRate? GetExchangeRateOrDefault(string from, string to, DateTime? date = null)
         {
-            var rate = s_cachedRates.Keys.FirstOrDefault(r => r.From == from && r.To == to);
+            ExchangeRate? rate;
+
+            if(date is null)
+            {
+                rate = s_cachedRates.Keys.FirstOrDefault(r => r.From == from && r.To == to);
+            }
+            else
+            {
+                rate = s_cachedRates.Keys.FirstOrDefault(r => r.From == from && r.To == to && r.Date.HasValue && (r.Date - date).Value.Days == 0);
+            }
 
             if (rate is null || (DateTime.UtcNow - s_cachedRates[rate]).Milliseconds >= _rateLifetimeInCache)
             {
@@ -39,13 +57,13 @@ namespace ExchangeService.BusinessLogic.BusinessLogic.RequestProcess
             return rate;
         }
 
-        public void SetExchangeRate(string from, string to, decimal rate)
+        public void SetExchangeRate(string from, string to, decimal rate, DateTime? date = null)
         {
             var exchangeRate = new ExchangeRate()
             {
                 From = from,
                 To = to,
-                Date = DateTime.UtcNow,
+                Date = date ?? DateTime.UtcNow,
                 Rate = rate
             };
 

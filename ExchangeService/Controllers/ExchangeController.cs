@@ -70,7 +70,7 @@ public class ExchangeController : Controller
                 responseBody.Success = true;
                 responseBody.Date = exchangeRate.Date.ToString("MM/dd/yyyy");
             }
-        } 
+        }
         catch
         {
             responseBody.Success = false;
@@ -93,7 +93,7 @@ public class ExchangeController : Controller
             {
                 return;
             }
-            
+
             if (_informer.IsCreatedExchangeRate(@base, currency))
             {
                 currencies[currency] = _informer.GetExchangeRateOrDefault(@base, currency).Rate;
@@ -125,7 +125,7 @@ public class ExchangeController : Controller
         };
         foreach (var kv in currencies)
         {
-            responseBody.Rates[kv.Key] = kv.Value;
+            responseBody.Rates[kv.Key] = kv.Value.ToString();
         }
 
         return JsonConvert.SerializeObject(responseBody);
@@ -160,7 +160,91 @@ public class ExchangeController : Controller
         var response = await client.ExecuteAsync(request);
         return response.Content;
     }
-   
+
+    [HttpGet]
+    [Route("fluctuation")]
+    public async Task<string> Fluctuation(DateTime start, DateTime end, string baseCurrency, params string[] currencies)
+    {
+        ExchangeRate? startRate = null;
+        ExchangeRate? endRate = null;
+        List<string> uncahcedCurrencies = new List<string>();
+        List<string> cahcedCurrencies = new List<string>();
+        Response responseBody;
+        try
+        {
+            foreach (string currency in currencies)
+            {
+
+                if (_informer.IsCreatedExchangeRate(baseCurrency, currency, start))
+                {
+                    startRate = _informer.GetExchangeRateOrDefault(baseCurrency, currency, start);
+                }
+
+                if (_informer.IsCreatedExchangeRate(baseCurrency, currency, end))
+                {
+                    endRate = _informer.GetExchangeRateOrDefault(baseCurrency, currency, end);
+                }
+
+                if (startRate is null || endRate is null)
+                {
+                    uncahcedCurrencies.Add(currency);
+                }
+            }
+
+            if (uncahcedCurrencies.Count > 0)
+            {
+                string currenciesRequest = string.Join(',', uncahcedCurrencies);
+
+                var urlBuilder = new StringBuilder($"{_apiUrl}/latest?")
+             .AppendIf($"start_date={start.ToString("yyyy-MM-dd")}&", true)
+             .AppendIf($"end_date={end.ToString("yyyy-MM-dd")}", true)
+             .AppendIf($"base={baseCurrency}", string.IsNullOrWhiteSpace(baseCurrency))
+             .AppendIf($"symbols={currenciesRequest}", string.IsNullOrWhiteSpace(currenciesRequest));
+
+                var client = new RestClient(urlBuilder.ToString());
+                var request = new RestRequest();
+                request.AddHeader(ApiKeyHeader, _apiKey);
+                var response = await client.ExecuteAsync(request);
+                responseBody = JsonConvert.DeserializeObject<Response>(response.Content);
+            }
+            else
+            {
+                responseBody = new Response()
+                {
+                    Base = baseCurrency,
+                    EndDate = end.ToString("yyyy-MM-dd"),
+                    Fluctuation = true,
+                    StartDate = start.ToString("yyyy-MM-dd"),
+                    Success = true,
+                };
+
+            }
+
+            foreach (var currency in cahcedCurrencies)
+            {
+                startRate = _informer.GetExchangeRateOrDefault(baseCurrency, currency, start);
+                endRate = _informer.GetExchangeRateOrDefault(baseCurrency, currency, end);
+
+                string jsonObject = string.Format(
+                    "{ \"change\":\"{0}\" \r\n \"change_pct\":\"{1}\" \r\n \"end_rate\":\"{2}\" \r\n \"start_rate\":\"{3}\" \r\n}",
+                    startRate.Rate / endRate.Rate, startRate.Rate / endRate.Rate, start, end);
+
+                responseBody.Rates.Add(currency, jsonObject);
+            }
+
+        }
+        catch
+        {
+            responseBody = new Response()
+            {
+                Success = false,
+            };
+        }
+
+
+        return JsonConvert.SerializeObject(responseBody);
+    }
+
     //[HttpGet]
     //[Route("exchangeRate")]
     //public string GetExchangeRateOrDefault(string baseCurrency, string[] currencies, DateTime? date = null)

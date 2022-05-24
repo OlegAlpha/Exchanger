@@ -19,7 +19,7 @@ public class Response
     public string? EndDate { get; set; }
 
     [JsonProperty("rates", NullValueHandling = NullValueHandling.Ignore)]
-    public Dictionary<string, decimal>? Rates { get; set; }
+    public Dictionary<string, string>? Rates { get; set; }
     [JsonProperty("success", NullValueHandling = NullValueHandling.Ignore)]
     public bool? Success { get; set; } = true;
     [JsonProperty("fluctuation", NullValueHandling = NullValueHandling.Ignore)]
