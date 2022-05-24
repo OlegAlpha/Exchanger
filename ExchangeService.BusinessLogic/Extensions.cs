@@ -3,7 +3,7 @@ using System.Text;
 
 namespace ExchangeService
 {
-    public static class Extensions
+    internal static class Extensions
     {
         public static StringBuilder AppendIf(this StringBuilder sb, string? s, bool condition)
         {
