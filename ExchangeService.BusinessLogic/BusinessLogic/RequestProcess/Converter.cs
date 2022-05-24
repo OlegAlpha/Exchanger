@@ -66,15 +66,12 @@ public class Converter
     {
         if (amount < 0)
         {
-            string message = string.Format("amount for exchange lower then 0 (amount = {0})", amount);
-            throw new ArgumentException(message);
+            throw new ArgumentException($"amount for exchange lower then 0 (amount = {amount})");
         }
 
         CheckCountExchanges(userId);
 
-        decimal result;
-
-        result = rate.Rate * amount;
+        decimal result = rate.Rate * amount;
         AddToStory(userId, amount, rate);
 
         return result;
