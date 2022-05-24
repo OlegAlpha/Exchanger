@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using ExchangeService.BusinessLogic.BusinessLogic.Interfaces.Services;
 using ExchangeService.BusinessLogic.BusinessLogic.RequestProcess;
 using ExchangeService.BusinessLogic.Context;
 using ExchangeService.DataAccessLayer.Entities;
@@ -17,50 +18,48 @@ public class ExchangeController : ControllerBase
 
     private readonly string _apiKey;
     private readonly string _apiUrl;
-    private readonly ICacheService _cacheService;
-    private readonly IHistoryService _storyService;
+    private readonly IRedirectRequests _redirect;
 
-    public ExchangeController(IConfiguration configuration, ICacheService cache, IHistoryService storyService)
+    public ExchangeController(IConfiguration configuration, IRedirectRequests redirect)
     {
         _apiKey = configuration[ApiConfigurationKey];
         _apiUrl = configuration[ApiUrlKey];
-        _cacheService = cache;
-        _storyService = storyService;
+        _redirect = redirect;
     }
 
     [HttpGet]
     [Route("exchange")]
     public async Task<string> Exchange(int userId, decimal amount, string from, string to)
     {
-        return await _cacheService.ExchageProcess(userId, amount, from, to);
+        return await _redirect.ExchageProcess(userId, amount, from, to);
     }
 
     [HttpGet]
     [Route("latest")]
     public async Task<string?> GetLatestRates(string? @base, string? symbols)
     {
-        return await _cacheService.LatestRatesProcess(@base, symbols);
+        return await _redirect.LatestRatesProcess(@base, symbols);
     }
 
     [HttpGet]
     [Route("symbols")]
     public async Task<string?> GetAvailableCurrencies()
     {
-        return await _cacheService.GetAvailableCurrencies();
+        return await _redirect.GetAvailableCurrencies();
     }
 
     [HttpGet]
     [Route("timeseries")]
     public async Task<string?> GetRatesWithin(DateTime endDate, DateTime startDate, string? @base, string? symbols)
     {
-        return await _cacheService.RatesWithinProcess(endDate, startDate, @base, symbols);
+        return await _redirect.RatesWithinProcess(endDate, startDate, @base, symbols);
     }
 
     [HttpGet]
     [Route("fluctuation")]
     public async Task<string> Fluctuation(DateTime start, DateTime end, string baseCurrency, params string[] currencies)
     {
-        return await _cacheService.FluctuationProcessing(start, end, baseCurrency, currencies);
+        return await _redirect.FluctuationProcessing(start, end, baseCurrency, currencies);
     }
 
 }

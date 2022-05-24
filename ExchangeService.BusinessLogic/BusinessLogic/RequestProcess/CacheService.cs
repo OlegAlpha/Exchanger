@@ -11,12 +11,9 @@ namespace ExchangeService.BusinessLogic.BusinessLogic.RequestProcess
 {
     public class CacheService : ICacheService
     {
-        private const string ApiConfigurationKey = "API_KEY";
-        private const string ApiUrlKey = "API_URL";
-        private const string ApiKeyHeader = "apikey";
+      
         private readonly IHistoryService _storyService;
-        private readonly string _apiKey;
-        private readonly string _apiUrl;
+
 
         private const string RateLifetimeKey = "RateLifetimeInCache";
         private readonly int _rateLifetimeInCache;
@@ -25,8 +22,6 @@ namespace ExchangeService.BusinessLogic.BusinessLogic.RequestProcess
         public CacheService(IConfiguration configuration, IHistoryService storyService)
         {
             _rateLifetimeInCache = Int32.Parse(configuration[RateLifetimeKey]);
-            _apiKey = configuration[ApiConfigurationKey];
-            _apiUrl = configuration[ApiUrlKey];
             _storyService = storyService;
         }
 
@@ -84,28 +79,7 @@ namespace ExchangeService.BusinessLogic.BusinessLogic.RequestProcess
 
             s_cachedRates[exchangeRate] = DateTime.UtcNow;
         }
-
-        private async Task<Response> ReguestToExchange(int userId, decimal amount, string from, string to)
-        {
-            var responseBody = new Response();
-            string url = new StringBuilder(_apiUrl).Append("/convert?")
-                    .Append($"to={to}").Append($"&from={from}").Append($"&amount={amount}").ToString();
-            var client = new RestClient($"{_apiUrl}/convert?to={to}&from={from}&amount={amount}");
-            var request = new RestRequest();
-            request.Method = Method.Get;
-            request.AddHeader(ApiKeyHeader, _apiKey);
-            var response = await client.ExecuteGetAsync(request);
-
-            responseBody = JsonConvert.DeserializeObject<Response>(response.Content);
-            var rate = decimal.Parse(responseBody.Info.GetPropertyValue<string>("Rate"));
-            SetExchangeRate(from, to, rate);
-            ExchangeRate? exchangeRate = GetExchangeRateOrDefault(from, to);
-            _storyService.StoreExchange(userId, exchangeRate);
-
-            return responseBody;
-        }
-
-        private Response GetExchangeFromCache(int userId, decimal amount, string from, string to)
+        public Response GetExchangeFromCache(int userId, decimal amount, string from, string to)
         {
             var responseBody = new Response();
             ExchangeRate exchangeRate = GetExchangeRateOrDefault(from, to);
@@ -121,108 +95,7 @@ namespace ExchangeService.BusinessLogic.BusinessLogic.RequestProcess
             responseBody.Date = exchangeRate.Date?.ToString("MM/dd/yyyy");
             return responseBody;
         }
-        public async Task<string> ExchageProcess(int userId, decimal amount, string from, string to)
-        {
-            Response responseBody = new();
-            try
-            {
-                if (IsCreatedExchangeRate(from, to))
-                {
-                    responseBody = GetExchangeFromCache(userId, amount, from, to);
-                }
-                else
-                {
-                    responseBody = await ReguestToExchange(userId, amount, from, to);
-                }
-            }
-            catch
-            {
-                responseBody.Success = false;
-            }
-
-            return JsonConvert.SerializeObject(responseBody);
-        }
-
-        private async Task<Response> GetLatestRatesWithUncachedData(string newSymbols, string? @base, string? symbols)
-        {
-            Response responseBody;
-
-            if (string.IsNullOrEmpty(newSymbols))
-            {
-                responseBody = new Response()
-                {
-                    Base = @base,
-                    Date = DateTime.UtcNow.ToString("MM/dd/yyyy"),
-                    Success = true,
-                    TimeStamp = DateTime.UtcNow.Millisecond.ToString()
-                };
-            }
-            else
-            {
-                responseBody = await GetLatestuncachetRates(@base, newSymbols);
-            }
-
-            return responseBody;
-        }
-
-        public async Task<string> LatestRatesProcess(string? @base, string? symbols)
-        {
-            var toCurrencies = symbols?.Split(',').ToList();
-            var currencies = new Dictionary<string, decimal>();
-
-            toCurrencies?.ForEach(currency =>
-            {
-                var rate = GetExchangeRateOrDefault(@base, currency);
-                if (rate is null)
-                {
-                    return;
-                }
-
-                if (IsCreatedExchangeRate(@base, currency))
-                {
-                    currencies[currency] = (decimal)GetExchangeRateOrDefault(@base, currency).Rate;
-                    toCurrencies.Remove(currency);
-                }
-            });
-            var newSymbols = String.Join(",", toCurrencies);
-
-            Response responseBody = await GetLatestRatesWithUncachedData(newSymbols, @base, symbols);
-
-            foreach (var kv in currencies)
-            {
-                responseBody.Rates[kv.Key] = kv.Value.ToString();
-            }
-
-            return JsonConvert.SerializeObject(responseBody);
-        }
-
-        private async Task<Response> GetLatestuncachetRates(string? @base, string newSymbols)
-        {
-            Response responseBody;
-
-            var urlBuilder = new StringBuilder($"{_apiUrl}/latest?")
-                .AppendIf($"symbols={newSymbols}&", String.IsNullOrWhiteSpace(newSymbols) == false)
-                .AppendIf($"base={@base}", @base is not null);
-
-            var client = new RestClient(urlBuilder.ToString());
-            var request = new RestRequest();
-            request.AddHeader(ApiKeyHeader, _apiKey);
-            var response = await client.ExecuteAsync(request);
-            responseBody = JsonConvert.DeserializeObject<Response>(response.Content);
-
-            return responseBody;
-        }
-
-        public async Task<string> GetAvailableCurrencies()
-        {
-            var client = new RestClient($"{_apiUrl}/symbols");
-            var request = new RestRequest();
-            request.AddHeader(ApiKeyHeader, _apiKey);
-            var response = await client.ExecuteAsync(request);
-            return response.Content;
-        }
-
-        private bool IsCachedRatesWithin(DateTime startDate, DateTime endDate, string[] currencies, string @base)
+        public bool IsCachedRatesWithin(DateTime startDate, DateTime endDate, string[] currencies, string @base)
         {
             for (var i = startDate; i < endDate; i = i.AddDays(1))
             {
@@ -237,25 +110,7 @@ namespace ExchangeService.BusinessLogic.BusinessLogic.RequestProcess
 
             return true;
         }
-
-        private async Task<string> GetAllRatesInRangeFromServer(DateTime endDate, DateTime startDate, string? @base, string? symbols)
-        {
-            var urlBuilder = new StringBuilder(_apiUrl)
-                .Append($"/timeseries?end_date={endDate.ToString("MM/dd/yyyy")}")
-                .Append($"&start_date={startDate.ToString("MM/dd/yyyy")}")
-                .AppendIf($"&base={@base}", @base is not null)
-                .AppendIf($"&symbols={symbols}", symbols is not null);
-
-            var client = new RestClient(urlBuilder.ToString());
-
-            var request = new RestRequest();
-            request.AddHeader(ApiKeyHeader, "GSUSaL15VGITPxaUApRmfje7H9bII7rj");
-
-            var response = await client.ExecuteAsync(request);
-            return response.Content;
-        }
-
-        private async Task<Response> GetAllRatesInRangeFromCache(DateTime endDate, DateTime startDate, string? @base, string[] currencies)
+        public async Task<Response> GetAllRatesInRangeFromCache(DateTime endDate, DateTime startDate, string? @base, string[] currencies)
         {
             Response responseBody = new Response();
 
@@ -281,45 +136,7 @@ namespace ExchangeService.BusinessLogic.BusinessLogic.RequestProcess
 
             return responseBody;
         }
-        public async Task<string> RatesWithinProcess(DateTime endDate, DateTime startDate, string? @base, string? symbols)
-        {
-            string[] currencies = symbols.Split(',');
-
-            if (!IsCachedRatesWithin(startDate, endDate, currencies, @base))
-            {
-                return await GetAllRatesInRangeFromServer(endDate, startDate, @base, symbols);
-            }
-
-            Response responseBody = await GetAllRatesInRangeFromCache(endDate, startDate, @base, currencies);
-
-            responseBody.Base = @base;
-            responseBody.EndDate = endDate.ToString("yyyy-MM-dd");
-            responseBody.StartDate = startDate.ToString("yyyy-MM-dd");
-            responseBody.TimeSeries = true;
-
-            return JsonConvert.SerializeObject(responseBody);
-        }
-
-        public async Task<Response> GetUncachedFluctuation(DateTime start, DateTime end, string baseCurrency, List<string> uncahcedCurrencies)
-        {
-            string currenciesRequest = string.Join(',', uncahcedCurrencies);
-
-            var urlBuilder = new StringBuilder($"{_apiUrl}/latest?")
-         .AppendIf($"start_date={start.ToString("yyyy-MM-dd")}&", true)
-         .AppendIf($"end_date={end.ToString("yyyy-MM-dd")}", true)
-         .AppendIf($"base={baseCurrency}", string.IsNullOrWhiteSpace(baseCurrency))
-         .AppendIf($"symbols={currenciesRequest}", string.IsNullOrWhiteSpace(currenciesRequest));
-
-            var client = new RestClient(urlBuilder.ToString());
-            var request = new RestRequest();
-            request.AddHeader(ApiKeyHeader, _apiKey);
-            var response = await client.ExecuteAsync(request);
-            Response responseBody = JsonConvert.DeserializeObject<Response>(response.Content);
-
-            return responseBody;
-        }
-
-        private async Task<Response> GetCachedFluctuation(string baseCurrency, DateTime start, DateTime end, List<string> cachedCurrencies, Response responseBody)
+        public async Task<Response> GetCachedFluctuation(string baseCurrency, DateTime start, DateTime end, List<string> cachedCurrencies, Response responseBody)
         {
            
             foreach (var currency in cachedCurrencies)
@@ -337,62 +154,6 @@ namespace ExchangeService.BusinessLogic.BusinessLogic.RequestProcess
             return responseBody;
         }
 
-        public async Task<string> FluctuationProcessing(DateTime start, DateTime end, string baseCurrency, params string[] currencies)
-        {
-            ExchangeRate? startRate = null;
-            ExchangeRate? endRate = null;
-            List<string> uncahcedCurrencies = new List<string>();
-            List<string> cachedCurrencies = new List<string>();
-            Response responseBody;
-
-            try
-            {
-                foreach (string currency in currencies)
-                {
-
-                    if (IsCreatedExchangeRate(baseCurrency, currency, start))
-                    {
-                        startRate = GetExchangeRateOrDefault(baseCurrency, currency, start);
-                    }
-
-                    if (IsCreatedExchangeRate(baseCurrency, currency, end))
-                    {
-                        endRate = GetExchangeRateOrDefault(baseCurrency, currency, end);
-                    }
-
-                    if (startRate is null || endRate is null)
-                    {
-                        uncahcedCurrencies.Add(currency);
-                        continue;
-                    }
-
-                    cachedCurrencies.Add(currency);
-                }
-
-                if (uncahcedCurrencies.Count > 0)
-                {
-                    responseBody = await GetUncachedFluctuation(start, end, baseCurrency, uncahcedCurrencies);
-                }
-                else
-                {
-                    responseBody = new Response()
-                    {
-                        Base = baseCurrency,
-                        EndDate = end.ToString("yyyy-MM-dd"),
-                        Fluctuation = true,
-                        StartDate = start.ToString("yyyy-MM-dd"),
-                        Success = true,
-                    };
-                }
-
-                responseBody = await GetCachedFluctuation(baseCurrency, start, end, cachedCurrencies, responseBody);
-            }
-            catch
-            {
-                responseBody = new Response() { Success = false };
-            }
-
-            return JsonConvert.SerializeObject(responseBody);
-        }
+        
     }
 }
