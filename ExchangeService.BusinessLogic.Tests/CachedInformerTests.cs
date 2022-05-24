@@ -12,11 +12,11 @@ namespace ExchangerService.BusinessLogic.Tests
     [TestFixture]
     public class CachedInformerTests
     {
-        private RatesCache GetInformer()
+        private CacheService GetInformer()
         {
             var configuration = Substitute.For<IConfiguration>();
             configuration["RateLifetimeInCache"].Returns("1800000");
-            var informer = new RatesCache(configuration);
+            var informer = new CacheService(configuration);
             return informer;
         }
 

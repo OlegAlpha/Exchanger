@@ -1,8 +1,10 @@
-﻿using ExchangeService.DataAccessLayer.Entities;
+﻿using System.Text.Json.Serialization;
+using ExchangeService.DataAccessLayer.Entities;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
 
 namespace ExchangeService.DataAccessLayer;
-public class Context: DbContext
+public class Context : DbContext
 {
     public DbSet<ExchangeHistory> ExchangeHistories { get; set; }
     public DbSet<ExchangeRate> ExchangeRates { get; set; }

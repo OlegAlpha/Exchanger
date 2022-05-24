@@ -1,8 +1,8 @@
 ﻿using ExchangeService.BusinessLogic.Models.LocalAlternatives;
 using ExchangeService.BusinessLogic.Models.StaticObjects;
 using ExchangeService.BusinessLogic.Models.Story;
-using ExchangeService.DataAccessLayer.CRUD;
 using ExchangeService.DataAccessLayer.Entities;
+using ExchangeService.DataAccessLayer.Repositories;
 using Microsoft.Extensions.Configuration;
 
 namespace ExchangeService.BusinessLogic.BusinessLogic.RequestProcess;
@@ -13,10 +13,10 @@ public class HistoryService : IHistoryService
     private const string ExchangeLimitedPeriodKey = "ExchangeLimitedPeriodInHours";
     private readonly double _exchangeLimitedPeriodInHours;
     private readonly double _maxCountInPeriod;
-    private readonly BasicOperation _operation;
-    public HistoryService(BasicOperation operation, IConfiguration configuration)
+    private readonly IExchangeHistoryRepository _repository;
+    public StoryService(IExchangeHistoryRepository repository, IConfiguration configuration)
     {
-        _operation = operation;
+        _repository = repository;
         _maxCountInPeriod = Double.Parse(configuration[MaxCountInPeriodKey]);
         _exchangeLimitedPeriodInHours = Double.Parse(configuration[ExchangeLimitedPeriodKey]);
     }
@@ -25,7 +25,7 @@ public class HistoryService : IHistoryService
     {
         if (!StaticObjects.Stories.ContainsKey(userId))
         {
-            var userHistory = new UserHistory(userId, _operation);
+            var userHistory = new UserHistory(userId, _repository);
 
             StaticObjects.Stories.Add(userId, userHistory);
         }
@@ -43,7 +43,7 @@ public class HistoryService : IHistoryService
     {
         if (StaticObjects.Stories.ContainsKey(userId) == false)
         {
-            StaticObjects.Stories[userId] = new UserHistory(userId, _operation);
+            StaticObjects.Stories[userId] = new UserStory(userId, _operation);
         }
 
         IEnumerable<LocalExchangeHitory> history

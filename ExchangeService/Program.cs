@@ -1,7 +1,7 @@
 
 using ExchangeService.BusinessLogic.BusinessLogic.RequestProcess;
 using ExchangeService.DataAccessLayer;
-using ExchangeService.DataAccessLayer.CRUD;
+using ExchangeService.DataAccessLayer.Repositories;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -9,9 +9,9 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 var services = builder.Services;
 services.AddRazorPages();
-services.AddScoped<IRatesCache, RatesCache>();
-services.AddScoped<IHistoryService, HistoryService>();
-services.AddScoped<BasicOperation>();
+services.AddScoped<ICacheService, CacheService>();
+services.AddScoped<IStoryService, StoryService>();
+services.AddScoped<IExchangeHistoryRepository, ExchangeHistoryRepository>();
 
 var configuration = builder.Configuration;
 

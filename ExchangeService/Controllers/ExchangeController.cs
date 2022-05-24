@@ -15,18 +15,18 @@ public class ExchangeController : ControllerBase
     private const string ApiConfigurationKey = "API_KEY";
     private const string ApiUrlKey = "API_URL";
     private const string ApiKeyHeader = "apikey";
+
     private readonly string _apiKey;
-
     private readonly string _apiUrl;
-    private readonly IRatesCache _cache;
-    private readonly IHistoryService _historyService;
+    private readonly ICacheService _cacheService;
+    private readonly IStoryService _storyService;
 
-    public ExchangeController(IConfiguration configuration, IRatesCache cache, IHistoryService historyService)
+    public ExchangeController(IConfiguration configuration, IRatesCache cache, IStoryService storyService)
     {
         _apiKey = configuration[ApiConfigurationKey];
         _apiUrl = configuration[ApiUrlKey];
-        _cache = cache;
-        _historyService = historyService;
+        _cacheService = cacheService;
+        _storyService = storyService;
     }
 
     [HttpGet]
@@ -36,7 +36,7 @@ public class ExchangeController : ControllerBase
         var responseBody = new Response();
         try
         {
-            if (!_cache.IsCreatedExchangeRate(from, to))
+            if (!_cacheService.IsCreatedExchangeRate(from, to))
             {
                 var client = new RestClient($"https://api.apilayer.com/fixer/convert?to={to}&from={from}&amount={amount}");
                 var request = new RestRequest();
@@ -46,15 +46,15 @@ public class ExchangeController : ControllerBase
 
                 responseBody = JsonConvert.DeserializeObject<Response>(response.Content);
                 var rate = Decimal.Parse(responseBody.Info.GetPropertyValue<string>("Rate"));
-                _cache.SetExchangeRate(from, to, rate);
-                ExchangeRate? exchangeRate = _cache.GetExchangeRateOrDefault(from, to);
-                _historyService.StoreExchange(userId, exchangeRate);
+                _cacheService.SetExchangeRate(from, to, rate);
+                ExchangeRate? exchangeRate = _cacheService.GetExchangeRateOrDefault(from, to);
+                _storyService.StoreExchange(userId, exchangeRate);
             }
             else
             {
-                ExchangeRate exchangeRate = _cache.GetExchangeRateOrDefault(from, to);
-                _historyService.StoreExchange(userId, exchangeRate);
-                responseBody.Result = ((double)exchangeRate.Rate * (double)amount).ToString();
+                ExchangeRate exchangeRate = _cacheService.GetExchangeRateOrDefault(from, to);
+                _storyService.StoreExchange(userId, exchangeRate);
+                responseBody.Result = (exchangeRate.Rate * amount).ToString();
                 responseBody.Query = new
                 {
                     amount,
@@ -81,15 +81,15 @@ public class ExchangeController : ControllerBase
         var currencies = new Dictionary<string, decimal>();
         toCurrencies?.ForEach(currency =>
         {
-            var rate = _cache.GetExchangeRateOrDefault(@base, currency);
+            var rate = _cacheService.GetExchangeRateOrDefault(@base, currency);
             if (rate is null)
             {
                 return;
             }
 
-            if (_cache.IsCreatedExchangeRate(@base, currency))
+            if (_cacheService.IsCreatedExchangeRate(@base, currency))
             {
-                currencies[currency] = (decimal)_cache.GetExchangeRateOrDefault(@base, currency).Rate;
+                currencies[currency] = _cacheService.GetExchangeRateOrDefault(@base, currency).Rate;
                 toCurrencies.Remove(currency);
             }
         });
@@ -145,7 +145,7 @@ public class ExchangeController : ControllerBase
         {
             foreach (var currency in currencies)
             {
-                if (!_cache.IsCreatedExchangeRate(@base, currency, i))
+                if (!_cacheService.IsCreatedExchangeRate(@base, currency, i))
                 {
                     isAllCached = false;
                     break;
@@ -185,7 +185,7 @@ public class ExchangeController : ControllerBase
 
             foreach (var currency in currencies)
             {
-                ExchangeRate rate = _cache.GetExchangeRateOrDefault(@base, currency, i);
+                ExchangeRate rate = _cacheService.GetExchangeRateOrDefault(@base, currency, i);
                 string rateJson = string.Format("\"{0}\":{1},", currency, rate.Rate.ToString());
                 ratesJsonObject = string.Concat(ratesJsonObject, rate);
             }
@@ -217,14 +217,14 @@ public class ExchangeController : ControllerBase
             foreach (string currency in currencies)
             {
 
-                if (_cache.IsCreatedExchangeRate(baseCurrency, currency, start))
+                if (_cacheService.IsCreatedExchangeRate(baseCurrency, currency, start))
                 {
-                    startRate = _cache.GetExchangeRateOrDefault(baseCurrency, currency, start);
+                    startRate = _cacheService.GetExchangeRateOrDefault(baseCurrency, currency, start);
                 }
 
-                if (_cache.IsCreatedExchangeRate(baseCurrency, currency, end))
+                if (_cacheService.IsCreatedExchangeRate(baseCurrency, currency, end))
                 {
-                    endRate = _cache.GetExchangeRateOrDefault(baseCurrency, currency, end);
+                    endRate = _cacheService.GetExchangeRateOrDefault(baseCurrency, currency, end);
                 }
 
                 if (startRate is null || endRate is null)
@@ -264,8 +264,8 @@ public class ExchangeController : ControllerBase
 
             foreach (var currency in cahcedCurrencies)
             {
-                startRate = _cache.GetExchangeRateOrDefault(baseCurrency, currency, start);
-                endRate = _cache.GetExchangeRateOrDefault(baseCurrency, currency, end);
+                startRate = _cacheService.GetExchangeRateOrDefault(baseCurrency, currency, start);
+                endRate = _cacheService.GetExchangeRateOrDefault(baseCurrency, currency, end);
 
                 string jsonObject = string.Format(
                     "{ \"change\":\"{0}\" \r\n \"change_pct\":\"{1}\" \r\n \"end_rate\":\"{2}\" \r\n \"start_rate\":\"{3}\" \r\n}",

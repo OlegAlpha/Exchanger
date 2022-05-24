@@ -3,29 +3,29 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using ExchangeService.DataAccessLayer.CRUD;
 using ExchangeService.DataAccessLayer.Entities;
+using ExchangeService.DataAccessLayer.Repositories;
 using Microsoft.EntityFrameworkCore;
 
 namespace ExchangeService.DataAccessLayer.Tests
 {
     [TestFixture]
-    public class BasicOperationTests
+    public class ExchangeRepositoryTests
     {
-        private BasicOperation GetOperation()
+        private IExchangeHistoryRepository GetRepository()
         {
             var options = new DbContextOptionsBuilder<Context>()
                 .UseInMemoryDatabase("Test")
                 .Options;
             var context = new Context(options);
-            return new BasicOperation(context);
+            return new ExchangeHistoryRepository(context);
         }
 
         [Test]
         public void Add_ExchangeHistory_AddsToDatabase()
         {
-            var operation = GetOperation();
-            operation.Add(new ExchangeHistory()
+            var repository = GetRepository();
+            repository.Add(new ExchangeHistory()
             {
                 Created = DateTime.UtcNow,
                 Amount = 25,
@@ -39,7 +39,7 @@ namespace ExchangeService.DataAccessLayer.Tests
                 UserId = 1
             });
 
-            var history = operation.FindByUserIdOrDefault(1);
+            var history = repository.FindByUserIdOrDefault(1);
             Assert.That(history, Is.Not.Null);
             Assert.That(history.Rate.From, Is.EqualTo("EUR"));
             Assert.That(history.Rate.To, Is.EqualTo("UAH"));
@@ -48,9 +48,9 @@ namespace ExchangeService.DataAccessLayer.Tests
         [Test]
         public void FindByUserIdOrDefault_NonExistingId_ReturnsNull()
         {
-            var operation = GetOperation();
+            var repository = GetRepository();
 
-            var history = operation.FindByUserIdOrDefault(10);
+            var history = repository.FindByUserIdOrDefault(10);
 
             Assert.That(history, Is.Null);
         }
