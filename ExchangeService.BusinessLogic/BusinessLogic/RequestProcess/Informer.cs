@@ -14,17 +14,14 @@ public class Informer
     {
         if(string.IsNullOrWhiteSpace(from) || string.IsNullOrWhiteSpace(to))
         {
-            string message = string.Format("{0} has argument which is null ({1} or {2})", nameof(GetExchangeRate), nameof(from), nameof(to));
-
-            throw new ArgumentNullException(message);
+            throw new ArgumentNullException($"{nameof(GetExchangeRate)} has argument which is null ({nameof(from)} or {nameof(to)})");
         }
 
         ExchangeRate? result = _operation.FindOrDefault(Find);
 
         if(result == null)
-        {
-            string message = string.Format("this Exchange rate was not created {0} with so parameters {1} and {2}", DateTime.UtcNow.Date, from, to);
-            throw new ArgumentException();
+        { 
+            throw new ArgumentException($"this Exchange rate was not created {DateTime.UtcNow.Date} with so parameters {from} and {to}");
         }
 
         return result;
