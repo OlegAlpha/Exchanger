@@ -39,51 +39,7 @@ public class ExchangeController : ControllerBase
     [Route("latest")]
     public async Task<string?> GetLatestRates(string? @base, string? symbols)
     {
-        var toCurrencies = symbols?.Split(',').ToList();
-        var currencies = new Dictionary<string, decimal>();
-        toCurrencies?.ForEach(currency =>
-        {
-            var rate = _cacheService.GetExchangeRateOrDefault(@base, currency);
-            if (rate is null)
-            {
-                return;
-            }
-
-            if (_cacheService.IsCreatedExchangeRate(@base, currency))
-            {
-                currencies[currency] = (decimal)_cacheService.GetExchangeRateOrDefault(@base, currency).Rate;
-                toCurrencies.Remove(currency);
-            }
-        });
-
-        var newSymbols = String.Join(",", toCurrencies);
-        Response? responseBody = null;
-        if (String.IsNullOrWhiteSpace(newSymbols))
-        {
-            var urlBuilder = new StringBuilder($"{_apiUrl}/latest?")
-                .AppendIf($"symbols={newSymbols}&", String.IsNullOrWhiteSpace(newSymbols) == false)
-                .AppendIf($"base={@base}", @base is not null);
-
-            var client = new RestClient(urlBuilder.ToString());
-            var request = new RestRequest();
-            request.AddHeader(ApiKeyHeader, _apiKey);
-            var response = await client.ExecuteAsync(request);
-            responseBody = JsonConvert.DeserializeObject<Response>(response.Content);
-        }
-
-        responseBody ??= new Response()
-        {
-            Base = @base,
-            Date = DateTime.UtcNow.ToString("MM/dd/yyyy"),
-            Success = true,
-            TimeStamp = DateTime.UtcNow.Millisecond.ToString()
-        };
-        foreach (var kv in currencies)
-        {
-            responseBody.Rates[kv.Key] = kv.Value.ToString();
-        }
-
-        return JsonConvert.SerializeObject(responseBody);
+        return await _cacheService.LatestRatesProcess(@base, symbols);
     }
 
     [HttpGet]

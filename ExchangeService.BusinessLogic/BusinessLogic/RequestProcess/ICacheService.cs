@@ -8,4 +8,5 @@ public interface ICacheService
     ExchangeRate? GetExchangeRateOrDefault(string from, string to, DateTime? date = null);
     void SetExchangeRate(string from, string to, decimal rate, DateTime? date = null);
     public Task<string> ExchageProcess(int userId, decimal amount, string from, string to)
+Task<string?> LatestRatesProcess(string? @base, string? symbols);
 }

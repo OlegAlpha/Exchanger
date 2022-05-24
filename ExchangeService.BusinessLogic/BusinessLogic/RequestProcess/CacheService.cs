@@ -139,10 +139,80 @@ namespace ExchangeService.BusinessLogic.BusinessLogic.RequestProcess
             }
             catch
             {
-                responseBody.Success=false;
+                responseBody.Success = false;
             }
 
             return JsonConvert.SerializeObject(responseBody);
+        }
+
+        private async Task<Response> GetLatestRatesWithUncachedData(string newSymbols, string? @base, string? symbols)
+        {
+            Response responseBody;
+
+            if (string.IsNullOrEmpty(newSymbols))
+            {
+                responseBody = new Response()
+                {
+                    Base = @base,
+                    Date = DateTime.UtcNow.ToString("MM/dd/yyyy"),
+                    Success = true,
+                    TimeStamp = DateTime.UtcNow.Millisecond.ToString()
+                };
+            }
+            else
+            {
+                responseBody = await GetLatestuncachetRates(@base, newSymbols);
+            }
+
+            return responseBody;
+        }
+
+        public async Task<string> LatestRatesProcess(string? @base, string? symbols)
+        {
+            var toCurrencies = symbols?.Split(',').ToList();
+            var currencies = new Dictionary<string, decimal>();
+
+            toCurrencies?.ForEach(currency =>
+            {
+                var rate = _cacheService.GetExchangeRateOrDefault(@base, currency);
+                if (rate is null)
+                {
+                    return;
+                }
+
+                if (_cacheService.IsCreatedExchangeRate(@base, currency))
+                {
+                    currencies[currency] = (decimal)_cacheService.GetExchangeRateOrDefault(@base, currency).Rate;
+                    toCurrencies.Remove(currency);
+                }
+            });
+            var newSymbols = String.Join(",", toCurrencies);
+
+            Response responseBody = await GetLatestRatesWithUncachedData(newSymbols, @base, symbols);
+
+            foreach (var kv in currencies)
+            {
+                responseBody.Rates[kv.Key] = kv.Value.ToString();
+            }
+
+            return JsonConvert.SerializeObject(responseBody);
+        }
+
+        private async Task<Response> GetLatestuncachetRates(string? @base, string newSymbols)
+        {
+            Response responseBody;
+
+            var urlBuilder = new StringBuilder($"{_apiUrl}/latest?")
+                .AppendIf($"symbols={newSymbols}&", String.IsNullOrWhiteSpace(newSymbols) == false)
+                .AppendIf($"base={@base}", @base is not null);
+
+            var client = new RestClient(urlBuilder.ToString());
+            var request = new RestRequest();
+            request.AddHeader(ApiKeyHeader, _apiKey);
+            var response = await client.ExecuteAsync(request);
+            responseBody = JsonConvert.DeserializeObject<Response>(response.Content);
+
+            return responseBody;
         }
     }
 }
