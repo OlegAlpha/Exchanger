@@ -61,7 +61,7 @@ public class Converter
         return true;
     }
 
-    public void Exchange(int userId, ExchangeRate rate)
+    public decimal Exchange(int userId, decimal amount, ExchangeRate rate)
     {
         CheckCountExchanges(userId);
         AddToStory(userId, rate);        
