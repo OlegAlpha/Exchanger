@@ -15,8 +15,8 @@ public class BasicOperation
         _context.SaveChanges();
     }
 
-    public ExchangeStory? FindByUserIdOrDefault(int userId)
+    public ExchangeHistory? FindByUserIdOrDefault(int userId)
     {
-        return _context.ExchangeStories.FirstOrDefault(x => x.UserId == userId);
+        return _context.ExchangeHistories.FirstOrDefault(x => x.UserId == userId);
     }
 }

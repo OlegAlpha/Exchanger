@@ -3,5 +3,5 @@
 namespace ExchangeService.BusinessLogic.Models.StaticObjects;
 public static class StaticObjects
 {
-    public static Dictionary<int, UserStory> Stories { get; } = new Dictionary<int, UserStory>();
+    public static Dictionary<int, UserHistory> Stories { get; } = new Dictionary<int, UserHistory>();
 }

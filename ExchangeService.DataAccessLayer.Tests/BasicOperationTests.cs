@@ -22,10 +22,10 @@ namespace ExchangeService.DataAccessLayer.Tests
         }
 
         [Test]
-        public void Add_ExchangeStory_AddsToDatabase()
+        public void Add_ExchangeHistory_AddsToDatabase()
         {
             var operation = GetOperation();
-            operation.Add(new ExchangeStory()
+            operation.Add(new ExchangeHistory()
             {
                 Created = DateTime.UtcNow,
                 Amount = 25,
@@ -34,15 +34,15 @@ namespace ExchangeService.DataAccessLayer.Tests
                     Date = DateTime.UtcNow,
                     From = "EUR",
                     To = "UAH",
-                    Rate = 35m
+                    Rate = (double)35m
                 },
                 UserId = 1
             });
 
-            var story = operation.FindByUserIdOrDefault(1);
-            Assert.That(story, Is.Not.Null);
-            Assert.That(story.Rate.From, Is.EqualTo("EUR"));
-            Assert.That(story.Rate.To, Is.EqualTo("UAH"));
+            var history = operation.FindByUserIdOrDefault(1);
+            Assert.That(history, Is.Not.Null);
+            Assert.That(history.Rate.From, Is.EqualTo("EUR"));
+            Assert.That(history.Rate.To, Is.EqualTo("UAH"));
         }
 
         [Test]
@@ -50,9 +50,9 @@ namespace ExchangeService.DataAccessLayer.Tests
         {
             var operation = GetOperation();
 
-            var story = operation.FindByUserIdOrDefault(10);
+            var history = operation.FindByUserIdOrDefault(10);
 
-            Assert.That(story, Is.Null);
+            Assert.That(history, Is.Null);
         }
     }
 }

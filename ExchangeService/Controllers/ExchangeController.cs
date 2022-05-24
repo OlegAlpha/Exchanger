@@ -19,14 +19,14 @@ public class ExchangeController : ControllerBase
 
     private readonly string _apiUrl;
     private readonly IRatesCache _cache;
-    private readonly IStoryService _storyService;
+    private readonly IHistoryService _historyService;
 
-    public ExchangeController(IConfiguration configuration, IRatesCache cache, IStoryService storyService)
+    public ExchangeController(IConfiguration configuration, IRatesCache cache, IHistoryService historyService)
     {
         _apiKey = configuration[ApiConfigurationKey];
         _apiUrl = configuration[ApiUrlKey];
         _cache = cache;
-        _storyService = storyService;
+        _historyService = historyService;
     }
 
     [HttpGet]
@@ -48,13 +48,13 @@ public class ExchangeController : ControllerBase
                 var rate = Decimal.Parse(responseBody.Info.GetPropertyValue<string>("Rate"));
                 _cache.SetExchangeRate(from, to, rate);
                 ExchangeRate? exchangeRate = _cache.GetExchangeRateOrDefault(from, to);
-                _storyService.StoreExchange(userId, exchangeRate);
+                _historyService.StoreExchange(userId, exchangeRate);
             }
             else
             {
                 ExchangeRate exchangeRate = _cache.GetExchangeRateOrDefault(from, to);
-                _storyService.StoreExchange(userId, exchangeRate);
-                responseBody.Result = (exchangeRate.Rate * amount).ToString();
+                _historyService.StoreExchange(userId, exchangeRate);
+                responseBody.Result = ((double)exchangeRate.Rate * (double)amount).ToString();
                 responseBody.Query = new
                 {
                     amount,
@@ -89,7 +89,7 @@ public class ExchangeController : ControllerBase
 
             if (_cache.IsCreatedExchangeRate(@base, currency))
             {
-                currencies[currency] = _cache.GetExchangeRateOrDefault(@base, currency).Rate;
+                currencies[currency] = (decimal)_cache.GetExchangeRateOrDefault(@base, currency).Rate;
                 toCurrencies.Remove(currency);
             }
         });

@@ -1,7 +1,7 @@
 ﻿using ExchangeService.DataAccessLayer.Entities;
 
 namespace ExchangeService.BusinessLogic.Models.LocalAlternatives;
-public class LocalExchangeStory
+public class LocalExchangeHitory
 {
     public decimal Amount { get; set; }
     public ExchangeRate Rate { get; set; }

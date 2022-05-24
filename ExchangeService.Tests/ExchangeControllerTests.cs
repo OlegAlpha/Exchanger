@@ -34,7 +34,7 @@ namespace ExchangeService.Tests
                 .Options;
             var context = new Context(options);
             var operation = new BasicOperation(context);
-            //operation.Add(new ExchangeStory()
+            //operation.Add(new ExchangeHistory()
             //{
             //    UserId = 1,
             //    Created = DateTime.UtcNow.AddMinutes(-10),
@@ -46,8 +46,8 @@ namespace ExchangeService.Tests
             //        Rate = 35m
             //    }
             //});
-            var storyService = new StoryService(operation, configuration);
-            return new ExchangeController(configuration, cache, storyService);
+            var historyService = new HistoryService(operation, configuration);
+            return new ExchangeController(configuration, cache, historyService);
         }
 
         [Test]

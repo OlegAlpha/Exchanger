@@ -64,7 +64,7 @@ namespace ExchangeService.BusinessLogic.BusinessLogic.RequestProcess
                 From = from,
                 To = to,
                 Date = date ?? DateTime.UtcNow,
-                Rate = rate
+                Rate = (double)rate
             };
 
             s_cachedRates[exchangeRate] = DateTime.UtcNow;

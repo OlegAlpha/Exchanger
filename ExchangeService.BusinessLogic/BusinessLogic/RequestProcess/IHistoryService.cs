@@ -2,7 +2,7 @@
 
 namespace ExchangeService.BusinessLogic.BusinessLogic.RequestProcess;
 
-public interface IStoryService
+public interface IHistoryService
 {
     bool ExchangesCountIsValid(int userId);
     void StoreExchange(int userId, ExchangeRate rate);

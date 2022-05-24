@@ -1,4 +1,4 @@
-using DataBaseLayer;
+
 using ExchangeService.BusinessLogic.BusinessLogic.RequestProcess;
 using ExchangeService.DataAccessLayer;
 using ExchangeService.DataAccessLayer.CRUD;
@@ -10,7 +10,7 @@ var builder = WebApplication.CreateBuilder(args);
 var services = builder.Services;
 services.AddRazorPages();
 services.AddScoped<IRatesCache, RatesCache>();
-services.AddScoped<IStoryService, StoryService>();
+services.AddScoped<IHistoryService, HistoryService>();
 services.AddScoped<BasicOperation>();
 
 var configuration = builder.Configuration;

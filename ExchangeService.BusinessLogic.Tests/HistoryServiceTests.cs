@@ -14,9 +14,9 @@ using NSubstitute;
 namespace ExchangerService.BusinessLogic.Tests
 {
     [TestFixture]
-    public class StoryServiceTests
+    public class HistoryServiceTests
     {
-        private IStoryService GetStoryService()
+        private IHistoryService GetHistoryService()
         {
             var configuration = Substitute.For<IConfiguration>();
             configuration["MaxCountInPeriod"].Returns("10");
@@ -28,7 +28,7 @@ namespace ExchangerService.BusinessLogic.Tests
             var context = new Context(options);
             var operation = new BasicOperation(context);
 
-            return new StoryService(operation, configuration);
+            return new HistoryService(operation, configuration);
         }
 
         [Test]
@@ -36,8 +36,8 @@ namespace ExchangerService.BusinessLogic.Tests
         [TestCase(13)]
         public void ExchangesCountIsValid_NonExistingUserId_ReturnsTrue(int userId)
         {
-            var storyService = GetStoryService();
-            var result = storyService.ExchangesCountIsValid(userId);
+            var historyService = GetHistoryService();
+            var result = historyService.ExchangesCountIsValid(userId);
 
             Assert.That(result, Is.True);
         }
@@ -47,22 +47,22 @@ namespace ExchangerService.BusinessLogic.Tests
         [TestCase(2)]
         public void ExchangesCountIsValid_ExistingUserId_ReturnsTrue(int userId)
         {
-            var storyService = GetStoryService();
-            storyService.StoreExchange(userId, new ExchangeRate()
+            var historyService = GetHistoryService();
+            historyService.StoreExchange(userId, new ExchangeRate()
             {
                 Date = DateTime.UtcNow,
                 From = "EUR",
                 To = "EUR",
-                Rate = 1m
+                Rate = (double)1m
             });
-            var result = storyService.ExchangesCountIsValid(userId);
+            var result = historyService.ExchangesCountIsValid(userId);
             Assert.That(result, Is.True);
         }
 
         [Test]
         public void StoreExchange_11Times_ThrowsException()
         {
-            var service = GetStoryService();
+            var service = GetHistoryService();
             TestDelegate code = () =>
             {
                 for (var i = 0; i < 12; ++i)
@@ -72,7 +72,7 @@ namespace ExchangerService.BusinessLogic.Tests
                         Date = DateTime.UtcNow,
                         From = "EUR",
                         To = "EUR",
-                        Rate = 1m
+                        Rate = 1
                     });
                 }
             };
