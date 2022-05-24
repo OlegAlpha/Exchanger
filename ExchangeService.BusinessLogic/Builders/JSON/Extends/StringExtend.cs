@@ -21,9 +21,14 @@ public static class StringExtend
             throw new ArgumentNullException(nameof(component));
         }
 
+        string right = "";
+        if (String.IsNullOrWhiteSpace(component.Data.ToString()) == false) 
+        {
+             right = component.Data.Remove(component.Data.Length - 2, 1).ToString();
+        }
         StringBuilder result = new StringBuilder(source ?? "");
         string left = WrapComponent(component.Name);
-        string right = component.Data?.Remove(component.Data.Length - 2, 1)?.ToString();
+        
         right = WrapComponentsGroup(right);
 
         result = result.AppendJSONElement(left, right);

@@ -1,6 +1,7 @@
 ﻿using System;
 using ExchangerService.DataAccessLayer;
 using ExchangerService.DataAccessLayer.CRUD;
+using ExchangerService.DataAccessLayer.Entities;
 using ExchangeService.BusinessLogic.BusinessLogic.RequestProcess;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -8,13 +9,28 @@ using Newtonsoft.Json;
 using NSubstitute;
 using Xunit;
 
-namespace ExchangerService.Tests.Exchanger.Controllers.HomeController;
+namespace ExchangerService.Tests.Exchanger.Controllers.ExchangeController;
 public class GetExchangeStory
 {
-    private ExchangerService.Controllers.ExchangeController GetController()
+    private ExchangerService.Controllers.ExchangeController GetController(bool fillDb = false)
     {
         var options = new DbContextOptionsBuilder<Context>().UseInMemoryDatabase("Test").Options;
         var context = new Context(options);
+        if (fillDb)
+        {
+            for (var i = 1; i <= 8; ++i)
+            {
+                context.ExchangeRates.Add(new ExchangeRate()
+                {
+                    From = "UAH",
+                    To = "EUR",
+                    Created = DateTime.Now.AddDays(-i),
+                    Rate = 1m / 35
+                });
+            }
+
+            context.SaveChanges();
+        }
         var operation = new BasicOperation(context);
         var informer = new Informer(operation);
         var configuration = Substitute.For<IConfiguration>();
@@ -24,10 +40,10 @@ public class GetExchangeStory
         var controller = new ExchangerService.Controllers.ExchangeController(new CachedInformer(informer, configuration), new Converter(operation, configuration));
         return controller;
     }
-
+    [Fact]
     public void GetStory()
     {
-        var controller = GetController();
+        var controller = GetController(true);
 
         DateTime start = DateTime.Today.AddDays(-8);
         DateTime end = DateTime.Today.AddDays(-1);
@@ -39,10 +55,10 @@ public class GetExchangeStory
 
         Assert.NotNull(result);
         Assert.True(bool.Parse(result.success.ToString()));
-        Assert.True(bool.Parse(result.timeseries.ToString()));
+        Assert.True(bool.Parse(result.info.timeseries.ToString()));
         Assert.NotEqual("", result.rates.ToString());
     }
-
+    [Fact]
     public void GetFailedStory()
     {
         var controller = GetController();
@@ -57,7 +73,6 @@ public class GetExchangeStory
 
         Assert.NotNull(result);
         Assert.False(bool.Parse(result.success.ToString()));
-        Assert.True(bool.Parse(result.timeseries.ToString()));
-        Assert.Equal("", result.rates.ToString());
+        Assert.True(bool.Parse(result.info.timeseries.ToString()));
     }
 }

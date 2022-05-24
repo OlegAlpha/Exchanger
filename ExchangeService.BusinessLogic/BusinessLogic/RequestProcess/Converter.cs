@@ -41,13 +41,13 @@ public class Converter
 
     private bool CheckCountExchanges(int userId)
     {
+        if (StaticObjects.Stories.ContainsKey(userId) == false)
+        {
+            StaticObjects.Stories[userId] = new UserStory(userId, _operation);
+        }
+
         IEnumerable<LocalExchangeStory> story
             = StaticObjects.Stories[userId].ExchangeStories.Where(story => (DateTime.UtcNow - story.Created).Hours >= _exchangeLimitedPeriodInHours);
-
-        if(story is null)
-        {
-            return true;
-        }
 
         foreach (LocalExchangeStory storyItem in story)
         {

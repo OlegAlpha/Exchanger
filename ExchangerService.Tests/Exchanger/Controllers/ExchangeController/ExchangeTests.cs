@@ -1,5 +1,7 @@
-﻿using ExchangerService.DataAccessLayer;
+﻿using System;
+using ExchangerService.DataAccessLayer;
 using ExchangerService.DataAccessLayer.CRUD;
+using ExchangerService.DataAccessLayer.Entities;
 using ExchangeService.BusinessLogic.BusinessLogic.RequestProcess;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -7,13 +9,25 @@ using Newtonsoft.Json;
 using NSubstitute;
 using Xunit;
 
-namespace ExchangerService.Tests.Exchanger.Controllers.HomeController;
+namespace ExchangerService.Tests.Exchanger.Controllers.ExchangeController;
 public class ExchangeTests
 {
-    private ExchangerService.Controllers.ExchangeController GetController()
+    private ExchangerService.Controllers.ExchangeController GetController(bool fillDb = false)
     {
         var options = new DbContextOptionsBuilder<Context>().UseInMemoryDatabase("Test").Options;
         var context = new Context(options);
+        if (fillDb)
+        {
+            context.ExchangeRates.Add(new ExchangeRate()
+            {
+                Created = DateTime.Now,
+                From = "UAH",
+                To = "EUR",
+                Rate = 1.0m / 35
+            });
+
+            context.SaveChanges();
+        }
         var operation = new BasicOperation(context);
         var informator = new Informer(operation);
         var configuration = Substitute.For<IConfiguration>();
@@ -26,7 +40,7 @@ public class ExchangeTests
     [Fact]
     public void Exchange()
     {
-        var controller = GetController();
+        var controller = GetController(true);
         int userId = 1;
         decimal amount = 100;
         string from = "UAH";

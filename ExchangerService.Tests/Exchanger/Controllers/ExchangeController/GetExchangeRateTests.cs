@@ -1,6 +1,7 @@
 ﻿using System;
 using ExchangerService.DataAccessLayer;
 using ExchangerService.DataAccessLayer.CRUD;
+using ExchangerService.DataAccessLayer.Entities;
 using ExchangeService.BusinessLogic.BusinessLogic.RequestProcess;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -8,13 +9,49 @@ using Newtonsoft.Json;
 using NSubstitute;
 using Xunit;
 
-namespace ExchangerService.Tests.Exchanger.Controllers.HomeController;
+namespace ExchangerService.Tests.Exchanger.Controllers.ExchangeController;
 public class GetExchangeRateTests
 {
-    private ExchangerService.Controllers.ExchangeController GetController()
+    private ExchangerService.Controllers.ExchangeController GetController(string dbName = "Test", bool fillDb = false)
     {
-        var options = new DbContextOptionsBuilder<Context>().UseInMemoryDatabase("Test").Options;
+        var options = new DbContextOptionsBuilder<Context>().UseInMemoryDatabase(dbName).Options;
         var context = new Context(options);
+        if (fillDb)
+        {
+            context.ExchangeRates.Add(new ExchangeRate()
+            {
+                From = "USD",
+                To = "UAH",
+                Created = DateTime.Now,
+                Rate = 33m
+            });
+
+            context.ExchangeRates.Add(new ExchangeRate()
+            {
+                From = "USD",
+                To = "EUR",
+                Created = DateTime.Now,
+                Rate = 0.9m
+            });
+
+            context.ExchangeRates.Add(new ExchangeRate()
+            {
+                From = "USD",
+                To = "UAH",
+                Created = DateTime.Now.AddDays(-1),
+                Rate = 33m
+            });
+
+            context.ExchangeRates.Add(new ExchangeRate()
+            {
+                From = "USD",
+                To = "EUR",
+                Created = DateTime.Now.AddDays(-1),
+                Rate = 0.9m
+            });
+
+            context.SaveChanges();
+        }
         var operation = new BasicOperation(context);
         var informator = new Informer(operation);
         var configuration = Substitute.For<IConfiguration>();
@@ -28,7 +65,7 @@ public class GetExchangeRateTests
     [Fact]
     public void GetActualData()
     {
-        var controller = GetController();
+        var controller = GetController(fillDb: true);
         string baseCurrency = "USD";
         string[] resultCurrency = new[] { "UAH", };
 
@@ -44,7 +81,7 @@ public class GetExchangeRateTests
     [Fact]
     public void GetActualDatas()
     {
-        var controller = GetController();
+        var controller = GetController("2 Rates", true);
         string baseCurrency = "USD";
         string[] resultCurrency = new[] { "UAH", "EUR"};
 
@@ -88,7 +125,7 @@ public class GetExchangeRateTests
     [Fact]
     public void GetHistoricData()
     {
-        var controller = GetController();
+        var controller = GetController(fillDb: true);
         string baseCurrency = "USD";
         string[] resultCurrency = new[] { "UAH", };
         DateTime dateTime = DateTime.Today.AddDays(-1); 
@@ -105,7 +142,7 @@ public class GetExchangeRateTests
     [Fact]
     public void GetHistoricDatas()
     {
-        var controller = GetController();
+        var controller = GetController(fillDb: true);
         string baseCurrency = "USD";
         string[] resultCurrency = new[] { "UAH", "EUR" };
         DateTime dateTime = DateTime.Today.AddDays(-1);

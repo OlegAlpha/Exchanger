@@ -12,7 +12,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\DataBaseLayer\ExchangerService.DataAccessLayer.csproj" />
     <ProjectReference Include="..\ExchangerService.DataAccessLayer\ExchangerService.DataAccessLayer.csproj" />
   </ItemGroup>
 

@@ -13,14 +13,14 @@ using Newtonsoft.Json;
 using NSubstitute;
 using Xunit;
 
-namespace ExchangerService.Tests.Exchanger.Controllers.HomeController
+namespace ExchangerService.Tests.Exchanger.Controllers.ExchangeController
 {
     public class SymbolsTests
     {
-        private ExchangerService.Controllers.HomeController GetController(bool fillContext)
+        private ExchangerService.Controllers.ExchangeController GetController(string dbName, bool fillContext)
         {
             var options = new DbContextOptionsBuilder<Context>()
-                .UseInMemoryDatabase("Test")
+                .UseInMemoryDatabase(dbName)
                 .Options;
             var context = new Context(options);
             if (fillContext)
@@ -45,15 +45,15 @@ namespace ExchangerService.Tests.Exchanger.Controllers.HomeController
             configuration["RateLifetimeInCache"].Returns("1800000");
             configuration["MaxCountInPeriod"].Returns("10");
             configuration["ExchangeLimitedPeriodInHours"].Returns("1");
-            var controller = new ExchangerService.Controllers.HomeController(new CachedInformer(informator, configuration), new Converter(operation, configuration));
+            var controller = new ExchangerService.Controllers.ExchangeController(new CachedInformer(informator, configuration), new Converter(operation, configuration));
             return controller;
         }
 
         [Fact]
         public void Symbols_EmptyContext_ReturnsSuccessFalse()
         {
-            var controller = GetController(false);
-            var abbreviatures = new string[] {"UAH", "EUR"};
+            var controller = GetController("Empty",false);
+            var abbreviatures = new string[] { "UAH", "EUR" };
             var jsonResult = controller.Symbols(abbreviatures);
             dynamic result = JsonConvert.DeserializeObject(jsonResult);
 
@@ -64,8 +64,8 @@ namespace ExchangerService.Tests.Exchanger.Controllers.HomeController
         [Fact]
         public void Symbols_NonEmptyContext_ReturnsDecipheredAbbreviatures()
         {
-            var controller = GetController(true);
-            var abbreviatures = new string[] {"UAH", "EUR"};
+            var controller = GetController("NonEmpty", true);
+            var abbreviatures = new string[] { "UAH", "EUR" };
             var jsonResult = controller.Symbols(abbreviatures);
             dynamic result = JsonConvert.DeserializeObject(jsonResult);
             Assert.NotNull(result);
