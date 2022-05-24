@@ -1,6 +1,4 @@
 ﻿using ExchangeService.BusinessLogic.Models.LocalAlternatives;
-using ExchangeService.BusinessLogic.Models.StaticObjects;
-using ExchangeService.BusinessLogic.Models.Story;
 using ExchangeService.DataAccessLayer.Entities;
 using ExchangeService.DataAccessLayer.Repositories;
 using Microsoft.Extensions.Configuration;
@@ -23,38 +21,22 @@ public class HistoryService : IHistoryService
 
     private void AddToHistory(int userId, ExchangeRate exchangeRate)
     {
-        if (!StaticObjects.Stories.ContainsKey(userId))
+        ExchangeHistory history = new ExchangeHistory()
         {
-            var userHistory = new UserHistory(userId, _repository);
-
-            StaticObjects.Stories.Add(userId, userHistory);
-        }
-
-        LocalExchangeHistory history = new LocalExchangeHistory()
-        {
+            UserId = userId,
             Created = DateTime.UtcNow,
             Rate = exchangeRate,
         };
-
-        StaticObjects.Stories[userId].ExchangeStories.Add(history);
+        _repository.Add(history);
+        
     }
 
     public bool ExchangesCountIsValid(int userId)
     {
-        if (StaticObjects.Stories.ContainsKey(userId) == false)
-        {
-            StaticObjects.Stories[userId] = new UserHistory(userId, _repository);
-        }
+        var history = _repository.FindByUserIdOrDefault(userId);
+        var filteredHistory = history.Where((userRate) => (DateTime.UtcNow - userRate.Created).Hours < _exchangeLimitedPeriodInHours);
 
-        IEnumerable<LocalExchangeHistory> history
-            = StaticObjects.Stories[userId].ExchangeStories.Where(history => (DateTime.UtcNow - history.Created).Hours >= _exchangeLimitedPeriodInHours);
-
-        foreach (LocalExchangeHistory historyItem in history)
-        {
-            StaticObjects.Stories[userId].ExchangeStories.Remove(historyItem);
-        }
-
-        if (StaticObjects.Stories[userId].ExchangeStories.Count() > _maxCountInPeriod)
+        if (filteredHistory.Count() > _maxCountInPeriod)
         {
             return false;
         }

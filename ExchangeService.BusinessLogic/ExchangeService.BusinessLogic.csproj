@@ -16,4 +16,8 @@
     <ProjectReference Include="..\ExchangeService.DataAccessLayer\ExchangeService.DataAccessLayer.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Models\Story\" />
+  </ItemGroup>
+
 </Project>

@@ -18,8 +18,8 @@ public class ExchangeHistoryRepository : IExchangeHistoryRepository
         _context.SaveChanges();
     }
 
-    public ExchangeHistory? FindByUserIdOrDefault(int userId)
+    public IEnumerable<ExchangeHistory>? FindByUserIdOrDefault(int userId)
     {
-        return _exchangeHistories.FirstOrDefault(x => x.UserId == userId);
+        return _exchangeHistories.Where(x => x.UserId == userId);
     }
 }
