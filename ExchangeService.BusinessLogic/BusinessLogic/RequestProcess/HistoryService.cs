@@ -1,4 +1,4 @@
-﻿using ExchangeService.BusinessLogic.Models.LocalAlternatives;
+﻿
 using ExchangeService.DataAccessLayer.Entities;
 using ExchangeService.DataAccessLayer.Repositories;
 using Microsoft.Extensions.Configuration;

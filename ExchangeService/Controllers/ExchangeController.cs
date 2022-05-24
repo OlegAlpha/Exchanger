@@ -32,46 +32,7 @@ public class ExchangeController : ControllerBase
     [Route("exchange")]
     public async Task<string> Exchange(int userId, decimal amount, string from, string to)
     {
-        var responseBody = new Response();
-        try
-        {
-            if (!_cacheService.IsCreatedExchangeRate(from, to))
-            {
-                string url = new StringBuilder(_apiUrl).Append("/convert?")
-                    .Append($"to={to}").Append($"&from={from}").Append($"&amount={amount}").ToString();
-                var client = new RestClient($"{_apiUrl}/convert?to={to}&from={from}&amount={amount}");
-                var request = new RestRequest();
-                request.Method = Method.Get;
-                request.AddHeader(ApiKeyHeader, _apiKey);
-                var response = await client.ExecuteGetAsync(request);
-
-                responseBody = JsonConvert.DeserializeObject<Response>(response.Content);
-                var rate = Decimal.Parse(responseBody.Info.GetPropertyValue<string>("Rate"));
-                _cacheService.SetExchangeRate(from, to, rate);
-                ExchangeRate? exchangeRate = _cacheService.GetExchangeRateOrDefault(from, to);
-                _storyService.StoreExchange(userId, exchangeRate);
-            }
-            else
-            {
-                ExchangeRate exchangeRate = _cacheService.GetExchangeRateOrDefault(from, to);
-                _storyService.StoreExchange(userId, exchangeRate);
-                responseBody.Result = (exchangeRate.Rate * (double)amount).ToString();
-                responseBody.Query = new
-                {
-                    amount,
-                    from,
-                    to
-                };
-                responseBody.Success = true;
-                responseBody.Date = exchangeRate.Date?.ToString("MM/dd/yyyy");
-            }
-        }
-        catch
-        {
-            responseBody.Success = false;
-        }
-
-        return JsonConvert.SerializeObject(responseBody);
+        return await _cacheService.ExchageProcess(userId, amount, from, to);
     }
 
     [HttpGet]
