@@ -288,193 +288,56 @@ public class ExchangeController : Controller
         return JsonConvert.SerializeObject(responseBody);
     }
 
-    //[HttpGet]
-    //[Route("exchangeRate")]
-    //public string GetExchangeRateOrDefault(string baseCurrency, string[] currencies, DateTime? date = null)
-    //{
-    //    bool isHistorical = date != null;
-    //    bool isSuccess = true;
-    //    Stopwatch timer = new Stopwatch();
-    //    ExchangeRate exchangeRate;
-    //    JSONBaseComponent rates = new("rates");
+    [HttpGet]
+    [Route("{date}")]
+    public async Task<string?> GetRates(string? @base, string? symbols, DateTime date)
+    {
+        var toCurrencies = symbols?.Split(',').ToList();
+        var currencies = new Dictionary<string, decimal>();
+        toCurrencies?.ForEach(currency =>
+        {
+            var rate = _informer.GetExchangeRateOrDefault(@base, currency, date);
+            if (rate is null)
+            {
+                return;
+            }
 
-    //    timer.Start();
-    //    try
-    //    {
-    //        foreach (var currency in currencies)
-    //        {
-    //            exchangeRate = _informer.GetExchangeRateOrDefault(baseCurrency, currency, date);
-    //            rates.AddComponent(currency, exchangeRate.Rate.ToString());
-    //        }
-    //    }
-    //    catch
-    //    {
-    //        isSuccess = false;
-    //    }
+            if (_informer.IsCreatedExchangeRate(@base, currency, date))
+            {
+                currencies[currency] = _informer.GetExchangeRateOrDefault(@base, currency, date).Rate;
+                toCurrencies.Remove(currency);
+            }
+        });
 
-    //    timer.Stop();
+        var newSymbols = String.Join(",", toCurrencies);
+        Response? responseBody = null;
+        if (String.IsNullOrWhiteSpace(newSymbols))
+        {
+            var urlBuilder = new StringBuilder($"{_apiUrl}/latest?")
+                .AppendIf($"symbols={newSymbols}&", String.IsNullOrWhiteSpace(newSymbols) == false)
+                .AppendIf($"base={@base}", @base is not null);
 
-    //    InfoComponent info = new(timer.ElapsedMilliseconds, isHistorical);
-    //    ExchangeResponse response = new(date ?? DateTime.UtcNow.Date, info, isSuccess);
+            var client = new RestClient(urlBuilder.ToString());
+            var request = new RestRequest();
+            request.AddHeader(ApiKeyHeader, _apiKey);
+            var response = await client.ExecuteAsync(request);
+            responseBody = JsonConvert.DeserializeObject<Response>(response.Content);
+        }
 
-    //    info.AddComponent("base", baseCurrency);
-    //    response.AddComponent(rates);
+        responseBody ??= new Response()
+        {
+            Base = @base,
+            Date = DateTime.UtcNow.ToString("MM/dd/yyyy"),
+            Success = true,
+            TimeStamp = DateTime.UtcNow.Millisecond.ToString()
+        };
+        foreach (var kv in currencies)
+        {
+            responseBody.Rates[kv.Key] = kv.Value.ToString();
+        }
 
+        return JsonConvert.SerializeObject(responseBody);
+    }
 
-    //    return response.Build().ToString();
-    //}
-
-    //[HttpGet]
-    //[Route("exchange")]
-    //public string StoreExchange(int userId, decimal amount, string from, string to)
-    //{
-    //    decimal result = 0;
-    //    ExchangeRate exchangeRate = new();
-    //    Stopwatch timer = new();
-    //    bool isSuccess = true;
-
-    //    timer.Start();
-    //    try
-    //    {
-    //        exchangeRate = _informer.GetExchangeRateOrDefault(from, to);
-    //        result = _storyService.StoreExchange(userId, amount, exchangeRate);
-    //    }
-    //    catch
-    //    {
-    //        isSuccess = false;
-    //    }
-
-    //    timer.Stop();
-
-    //    QueryComponent query = new(exchangeRate?.From, exchangeRate?.To);
-    //    InfoComponent info = new(timer.ElapsedMilliseconds, false);
-    //    ExchangeResponse response = new(DateTime.UtcNow.Date, info, isSuccess, result);
-
-    //    response.AddComponent(query);
-    //    query.AddComponent("amount", amount.ToString());
-    //    info.AddComponent("rate", exchangeRate?.Rate.ToString());
-    //    response.AddComponent("rate", exchangeRate?.Rate.ToString());
-
-    //    return response.Build().ToString();
-    //}
-    //[HttpGet]
-    //[Route("fluctuation")]
-    //public string Fluctuation(DateTime start, DateTime end, string baseCurrency, params string[] currencies)
-    //{
-    //    bool isSuccess = true;
-    //    Stopwatch timer = new();
-    //    ExchangeRate startRate;
-    //    ExchangeRate endRate;
-    //    InfoComponent info;
-    //    ExchangeResponse response;
-    //    JSONBaseComponent rates = new("rates");
-    //    RateComponent rateComponent;
-
-    //    timer.Start();
-
-    //    try
-    //    {
-    //        foreach (string currency in currencies)
-    //        {
-    //            startRate = _informer.GetExchangeRateOrDefault(baseCurrency, currency, start);
-    //            endRate = _informer.GetExchangeRateOrDefault(baseCurrency, currency, end);
-
-    //            rateComponent = new RateComponent(currency, startRate.Rate, endRate.Rate);
-    //            rates.AddComponent(rateComponent);
-    //        }
-    //    }
-    //    catch
-    //    {
-    //        isSuccess = false;
-    //    }
-
-    //    timer.Stop();
-
-    //    info = new InfoComponent(timer.ElapsedMilliseconds);
-    //    response = new ExchangeResponse(DateTime.UtcNow.Date, info, isSuccess);
-    //    response.AddComponent(rates);
-    //    info.AddComponent("fluctuation", true.ToString());
-    //    info.AddComponent("base", baseCurrency);
-    //    info.AddComponent("start_date", start.ToString());
-    //    info.AddComponent("end_date", end.ToString());
-
-    //    return response.Build().ToString();
-    //}
-    //[HttpGet]
-    //[Route("exchangeStory")]
-    //public string GetExchangeStory(DateTime start, DateTime end, string baseCurrency, string[] currencies)
-    //{
-    //    bool isSuccess = true;
-    //    Stopwatch timer = new();
-    //    ExchangeRate exchangeRate;
-    //    JSONBaseComponent dates;
-    //    JSONBaseComponent rates = new("rates");
-
-    //    timer.Start();
-    //    try
-    //    {
-    //        for (DateTime current = start; (current - end).Days < 0; current = current.AddDays(1))
-    //        {
-    //            dates = new JSONBaseComponent(current.ToString());
-
-    //            foreach (var currency in currencies)
-    //            {
-    //                exchangeRate = _informer.GetExchangeRateOrDefault(baseCurrency, currency, current);
-    //                dates.AddComponent(currency, exchangeRate.Rate.ToString());
-    //            }
-
-    //            rates.AddComponent(dates);
-    //        }
-    //    }
-    //    catch
-    //    {
-    //        isSuccess = false;
-    //    }
-
-    //    timer.Stop();
-
-    //    InfoComponent info = new(timer.ElapsedMilliseconds);
-    //    ExchangeResponse response = new(DateTime.UtcNow.Date, info, isSuccess);
-
-    //    info.AddComponent("base", baseCurrency);
-    //    info.AddComponent("start_date", start.ToString());
-    //    info.AddComponent("end_date", end.ToString());
-    //    info.AddComponent("timeseries", true.ToString());
-    //    response.AddComponent(rates);
-
-
-    //    return response.Build().ToString();
-    //}
-    //public string Symbols(string[] abbreviatures)
-    //{
-    //    bool isSuccess = true;
-    //    Stopwatch stopwatch = new();
-    //    JSONBaseComponent symbols = new("symbols");
-    //    ExchangeResponse response;
-    //    InfoComponent info;
-    //    string abbreviatureName;
-    //    stopwatch.Start();
-
-    //    try
-    //    {
-    //        foreach (string abbreviature in abbreviatures)
-    //        {
-    //            abbreviatureName = _informer.GetAbbreviatureName(abbreviature);
-    //            symbols.AddComponent(abbreviature, abbreviatureName);
-    //        }
-    //    }
-    //    catch
-    //    {
-    //        isSuccess=false;
-    //    }
-
-    //    stopwatch.Stop();
-
-    //    info = new InfoComponent(stopwatch.ElapsedMilliseconds);
-    //    response = new ExchangeResponse(DateTime.UtcNow.Date, info, isSuccess);
-    //    response.AddComponent(symbols);
-
-    //    return response.Build().ToString();
-    //}
 
 }
