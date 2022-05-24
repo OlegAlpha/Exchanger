@@ -33,7 +33,6 @@ public class UserStory
                             UserId = Id,
                             Amount = item.Amount,
                             Rate = item.Rate,
-                            ExchangeRateId = item.Rate.Id,
                             Created = DateTime.UtcNow,
                         };
 

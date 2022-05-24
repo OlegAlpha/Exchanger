@@ -34,4 +34,6 @@ public class Response
     public string? TimeStamp { get; set; }
     [JsonProperty("result", NullValueHandling = NullValueHandling.Ignore)]
     public string? Result { get; set; }
+    [JsonProperty("timeseries", NullValueHandling = NullValueHandling.Ignore)]
+    public bool TimeSeries { get; set; }
 }

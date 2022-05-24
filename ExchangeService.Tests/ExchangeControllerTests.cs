@@ -4,12 +4,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using ExchangeService.BusinessLogic.BusinessLogic.RequestProcess;
+using ExchangeService.BusinessLogic.Context;
 using ExchangeService.Controllers;
 using ExchangeService.DataAccessLayer;
 using ExchangeService.DataAccessLayer.CRUD;
 using ExchangeService.DataAccessLayer.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Newtonsoft.Json;
 using NSubstitute;
 
 namespace ExchangeService.Tests
@@ -32,20 +34,32 @@ namespace ExchangeService.Tests
                 .Options;
             var context = new Context(options);
             var operation = new BasicOperation(context);
-            operation.Add(new ExchangeStory()
-            {
-                UserId = 1,
-                Created = DateTime.UtcNow.AddMinutes(-10),
-                Amount =10,
-                Rate = new ExchangeRate()
-                {
-                    From = "EUR",
-                    To = "UAH",
-                    Rate = 35m
-                }
-            });
+            //operation.Add(new ExchangeStory()
+            //{
+            //    UserId = 1,
+            //    Created = DateTime.UtcNow.AddMinutes(-10),
+            //    Amount = 10,
+            //    Rate = new ExchangeRate()
+            //    {
+            //        From = "EUR",
+            //        To = "UAH",
+            //        Rate = 35m
+            //    }
+            //});
             var storyService = new StoryService(operation, configuration);
             return new ExchangeController(configuration, cache, storyService);
+        }
+
+        [Test]
+        public void Exchange_UncachedData_ReturnsCorrectResponse()
+        {
+            var controller = GetController();
+
+            var response = controller.Exchange(1, 10, "EUR", "UAH").Result;
+            var responseBody = JsonConvert.DeserializeObject<Response>(response);
+
+            Assert.That(responseBody.Success, Is.True);
+            Assert.That(responseBody.Query.GetPropertyValue<decimal>("amount"), Is.EqualTo(10).Within(0.001m));
         }
     }
 }
