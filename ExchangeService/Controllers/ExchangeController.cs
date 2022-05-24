@@ -10,7 +10,7 @@ using RestSharp;
 namespace ExchangeService.Controllers;
 [ApiController]
 [Route("api/[controller]")]
-public class ExchangeController : Controller
+public class ExchangeController : ControllerBase
 {
     private const string ApiConfigurationKey = "API_KEY";
     private const string ApiUrlKey = "API_URL";
@@ -18,14 +18,14 @@ public class ExchangeController : Controller
     private readonly string _apiKey;
 
     private readonly string _apiUrl;
-    private readonly ICachedInformer _informer;
+    private readonly IRatesCache _cache;
     private readonly IStoryService _storyService;
 
-    public ExchangeController(IConfiguration configuration, ICachedInformer informer, IStoryService storyService)
+    public ExchangeController(IConfiguration configuration, IRatesCache cache, IStoryService storyService)
     {
         _apiKey = configuration[ApiConfigurationKey];
         _apiUrl = configuration[ApiUrlKey];
-        _informer = informer;
+        _cache = cache;
         _storyService = storyService;
     }
 
@@ -37,7 +37,7 @@ public class ExchangeController : Controller
         var responseBody = new Response();
         try
         {
-            if (!_informer.IsCreatedExchangeRate(from, to))
+            if (!_cache.IsCreatedExchangeRate(from, to))
             {
                 var client = new RestClient($"https://api.apilayer.com/fixer/convert?to={to}&from={from}&amount={amount}");
                 var request = new RestRequest();
@@ -47,13 +47,13 @@ public class ExchangeController : Controller
 
                 responseBody = JsonConvert.DeserializeObject<Response>(response.Content);
                 var rate = Decimal.Parse(responseBody.Info.GetPropertyValue<string>("Rate"));
-                _informer.SetExchangeRate(from, to, rate);
-                ExchangeRate? exchangeRate = _informer.GetExchangeRateOrDefault(from, to);
+                _cache.SetExchangeRate(from, to, rate);
+                ExchangeRate? exchangeRate = _cache.GetExchangeRateOrDefault(from, to);
                 _storyService.StoreExchange(userId, exchangeRate);
             }
             else
             {
-                ExchangeRate exchangeRate = _informer.GetExchangeRateOrDefault(from, to);
+                ExchangeRate exchangeRate = _cache.GetExchangeRateOrDefault(from, to);
                 _storyService.StoreExchange(userId, exchangeRate);
                 responseBody.Result = (exchangeRate.Rate * amount).ToString();
                 responseBody.Query = new
@@ -63,7 +63,7 @@ public class ExchangeController : Controller
                     to
                 };
                 responseBody.Success = true;
-                responseBody.Date = exchangeRate.Date.ToString("MM/dd/yyyy");
+                responseBody.Date = exchangeRate.Date?.ToString("MM/dd/yyyy");
             }
         }
         catch
@@ -82,15 +82,15 @@ public class ExchangeController : Controller
         var currencies = new Dictionary<string, decimal>();
         toCurrencies?.ForEach(currency =>
         {
-            var rate = _informer.GetExchangeRateOrDefault(@base, currency);
+            var rate = _cache.GetExchangeRateOrDefault(@base, currency);
             if (rate is null)
             {
                 return;
             }
 
-            if (_informer.IsCreatedExchangeRate(@base, currency))
+            if (_cache.IsCreatedExchangeRate(@base, currency))
             {
-                currencies[currency] = _informer.GetExchangeRateOrDefault(@base, currency).Rate;
+                currencies[currency] = _cache.GetExchangeRateOrDefault(@base, currency).Rate;
                 toCurrencies.Remove(currency);
             }
         });
@@ -169,14 +169,14 @@ public class ExchangeController : Controller
             foreach (string currency in currencies)
             {
 
-                if (_informer.IsCreatedExchangeRate(baseCurrency, currency, start))
+                if (_cache.IsCreatedExchangeRate(baseCurrency, currency, start))
                 {
-                    startRate = _informer.GetExchangeRateOrDefault(baseCurrency, currency, start);
+                    startRate = _cache.GetExchangeRateOrDefault(baseCurrency, currency, start);
                 }
 
-                if (_informer.IsCreatedExchangeRate(baseCurrency, currency, end))
+                if (_cache.IsCreatedExchangeRate(baseCurrency, currency, end))
                 {
-                    endRate = _informer.GetExchangeRateOrDefault(baseCurrency, currency, end);
+                    endRate = _cache.GetExchangeRateOrDefault(baseCurrency, currency, end);
                 }
 
                 if (startRate is null || endRate is null)
@@ -216,8 +216,8 @@ public class ExchangeController : Controller
 
             foreach (var currency in cahcedCurrencies)
             {
-                startRate = _informer.GetExchangeRateOrDefault(baseCurrency, currency, start);
-                endRate = _informer.GetExchangeRateOrDefault(baseCurrency, currency, end);
+                startRate = _cache.GetExchangeRateOrDefault(baseCurrency, currency, start);
+                endRate = _cache.GetExchangeRateOrDefault(baseCurrency, currency, end);
 
                 string jsonObject = string.Format(
                     "{ \"change\":\"{0}\" \r\n \"change_pct\":\"{1}\" \r\n \"end_rate\":\"{2}\" \r\n \"start_rate\":\"{3}\" \r\n}",
@@ -254,7 +254,7 @@ public class ExchangeController : Controller
     //    {
     //        foreach (var currency in currencies)
     //        {
-    //            exchangeRate = _informer.GetExchangeRateOrDefault(baseCurrency, currency, date);
+    //            exchangeRate = _cache.GetExchangeRateOrDefault(baseCurrency, currency, date);
     //            rates.AddComponent(currency, exchangeRate.Rate.ToString());
     //        }
     //    }
@@ -287,7 +287,7 @@ public class ExchangeController : Controller
     //    timer.Start();
     //    try
     //    {
-    //        exchangeRate = _informer.GetExchangeRateOrDefault(from, to);
+    //        exchangeRate = _cache.GetExchangeRateOrDefault(from, to);
     //        result = _storyService.StoreExchange(userId, amount, exchangeRate);
     //    }
     //    catch
@@ -327,8 +327,8 @@ public class ExchangeController : Controller
     //    {
     //        foreach (string currency in currencies)
     //        {
-    //            startRate = _informer.GetExchangeRateOrDefault(baseCurrency, currency, start);
-    //            endRate = _informer.GetExchangeRateOrDefault(baseCurrency, currency, end);
+    //            startRate = _cache.GetExchangeRateOrDefault(baseCurrency, currency, start);
+    //            endRate = _cache.GetExchangeRateOrDefault(baseCurrency, currency, end);
 
     //            rateComponent = new RateComponent(currency, startRate.Rate, endRate.Rate);
     //            rates.AddComponent(rateComponent);
@@ -370,7 +370,7 @@ public class ExchangeController : Controller
 
     //            foreach (var currency in currencies)
     //            {
-    //                exchangeRate = _informer.GetExchangeRateOrDefault(baseCurrency, currency, current);
+    //                exchangeRate = _cache.GetExchangeRateOrDefault(baseCurrency, currency, current);
     //                dates.AddComponent(currency, exchangeRate.Rate.ToString());
     //            }
 
@@ -410,7 +410,7 @@ public class ExchangeController : Controller
     //    {
     //        foreach (string abbreviature in abbreviatures)
     //        {
-    //            abbreviatureName = _informer.GetAbbreviatureName(abbreviature);
+    //            abbreviatureName = _cache.GetAbbreviatureName(abbreviature);
     //            symbols.AddComponent(abbreviature, abbreviatureName);
     //        }
     //    }

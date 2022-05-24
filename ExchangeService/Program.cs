@@ -9,7 +9,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 var services = builder.Services;
 services.AddRazorPages();
-services.AddScoped<ICachedInformer, CachedInformer>();
+services.AddScoped<IRatesCache, RatesCache>();
 services.AddScoped<IStoryService, StoryService>();
 services.AddScoped<BasicOperation>();
 
