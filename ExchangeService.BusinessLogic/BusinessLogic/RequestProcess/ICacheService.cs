@@ -11,4 +11,5 @@ public interface ICacheService
 Task<string?> LatestRatesProcess(string? @base, string? symbols);
     Task<string?> GetAvailableCurrencies();
     Task<string?> RatesWithinProcess(DateTime endDate, DateTime startDate, string? @base, string? symbols);
+    Task<string> FluctuationProcessing(DateTime start, DateTime end, string baseCurrency, string[] currencies);
 }

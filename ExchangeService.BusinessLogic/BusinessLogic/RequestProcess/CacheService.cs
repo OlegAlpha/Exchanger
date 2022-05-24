@@ -299,5 +299,100 @@ namespace ExchangeService.BusinessLogic.BusinessLogic.RequestProcess
 
             return JsonConvert.SerializeObject(responseBody);
         }
+
+        public async Task<Response> GetUncachedFluctuation(DateTime start, DateTime end, string baseCurrency, List<string> uncahcedCurrencies)
+        {
+            string currenciesRequest = string.Join(',', uncahcedCurrencies);
+
+            var urlBuilder = new StringBuilder($"{_apiUrl}/latest?")
+         .AppendIf($"start_date={start.ToString("yyyy-MM-dd")}&", true)
+         .AppendIf($"end_date={end.ToString("yyyy-MM-dd")}", true)
+         .AppendIf($"base={baseCurrency}", string.IsNullOrWhiteSpace(baseCurrency))
+         .AppendIf($"symbols={currenciesRequest}", string.IsNullOrWhiteSpace(currenciesRequest));
+
+            var client = new RestClient(urlBuilder.ToString());
+            var request = new RestRequest();
+            request.AddHeader(ApiKeyHeader, _apiKey);
+            var response = await client.ExecuteAsync(request);
+            Response responseBody = JsonConvert.DeserializeObject<Response>(response.Content);
+
+            return responseBody;
+        }
+
+        private async Task<Response> GetCachedFluctuation(string baseCurrency, DateTime start, DateTime end, List<string> cachedCurrencies, Response responseBody)
+        {
+           
+            foreach (var currency in cachedCurrencies)
+            {
+                ExchangeRate startRate = GetExchangeRateOrDefault(baseCurrency, currency, start);
+                ExchangeRate endRate = GetExchangeRateOrDefault(baseCurrency, currency, end);
+
+                string jsonObject = string.Format(
+                    "{ \"change\":\"{0}\" \r\n \"change_pct\":\"{1}\" \r\n \"end_rate\":\"{2}\" \r\n \"start_rate\":\"{3}\" \r\n}",
+                    startRate.Rate / endRate.Rate, startRate.Rate / endRate.Rate, start, end);
+
+                responseBody.Rates.Add(currency, jsonObject);
+            }
+
+            return responseBody;
+        }
+
+        public async Task<string> FluctuationProcessing(DateTime start, DateTime end, string baseCurrency, params string[] currencies)
+        {
+            ExchangeRate? startRate = null;
+            ExchangeRate? endRate = null;
+            List<string> uncahcedCurrencies = new List<string>();
+            List<string> cachedCurrencies = new List<string>();
+            Response responseBody;
+
+            try
+            {
+                foreach (string currency in currencies)
+                {
+
+                    if (IsCreatedExchangeRate(baseCurrency, currency, start))
+                    {
+                        startRate = GetExchangeRateOrDefault(baseCurrency, currency, start);
+                    }
+
+                    if (IsCreatedExchangeRate(baseCurrency, currency, end))
+                    {
+                        endRate = GetExchangeRateOrDefault(baseCurrency, currency, end);
+                    }
+
+                    if (startRate is null || endRate is null)
+                    {
+                        uncahcedCurrencies.Add(currency);
+                        continue;
+                    }
+
+                    cachedCurrencies.Add(currency);
+                }
+
+                if (uncahcedCurrencies.Count > 0)
+                {
+                    responseBody = await GetUncachedFluctuation(start, end, baseCurrency, uncahcedCurrencies);
+                }
+                else
+                {
+                    responseBody = new Response()
+                    {
+                        Base = baseCurrency,
+                        EndDate = end.ToString("yyyy-MM-dd"),
+                        Fluctuation = true,
+                        StartDate = start.ToString("yyyy-MM-dd"),
+                        Success = true,
+                    };
+                }
+
+                responseBody = await GetCachedFluctuation(baseCurrency, start, end, cachedCurrencies, responseBody);
+            }
+            catch
+            {
+                responseBody = new Response() { Success = false };
+            }
+
+            return JsonConvert.SerializeObject(responseBody);
+        }
     }
 }
