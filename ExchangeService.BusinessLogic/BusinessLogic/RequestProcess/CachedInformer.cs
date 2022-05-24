@@ -4,7 +4,7 @@ using Microsoft.Extensions.Configuration;
 
 namespace ExchangeService.BusinessLogic.BusinessLogic.RequestProcess
 {
-    public class CachedInformer
+    public class CachedInformer : ICachedInformer
     {
         private const string RateLifetimeKey = "RateLifetimeInCache";
         private readonly int _rateLifetimeInCache;
@@ -39,13 +39,14 @@ namespace ExchangeService.BusinessLogic.BusinessLogic.RequestProcess
             return rate;
         }
 
-        public void SetExchangeRate(string from, string to, string cachedResponse)
+        public void SetExchangeRate(string from, string to, decimal rate)
         {
             var exchangeRate = new ExchangeRate()
             {
                 From = from,
                 To = to,
-                CachedResponse = cachedResponse,
+                Date = DateTime.UtcNow,
+                Rate = rate
             };
 
             s_cachedRates[exchangeRate] = DateTime.UtcNow;

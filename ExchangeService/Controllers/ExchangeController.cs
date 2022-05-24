@@ -7,6 +7,7 @@ using ExchangeService.BusinessLogic.Builders.JSON;
 using ExchangeService.BusinessLogic.Builders.JSON.Components;
 using ExchangeService.BusinessLogic.Builders.JSON.Components.BaseComponent;
 using ExchangeService.BusinessLogic.BusinessLogic.RequestProcess;
+using ExchangeService.BusinessLogic.Context;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using RestSharp;
@@ -23,14 +24,14 @@ public class ExchangeController : Controller
 
     private readonly string _apiUrl;
     private readonly ICachedInformer _informer;
-    private readonly IConverter _converter;
+    private readonly IStoryService _storyService;
 
-    public ExchangeController(IConfiguration configuration, ICachedInformer informer, IConverter converter)
+    public ExchangeController(IConfiguration configuration, ICachedInformer informer, IStoryService storyService)
     {
         _apiKey = configuration[ApiConfigurationKey];
         _apiUrl = configuration[ApiUrlKey];
         _informer = informer;
-        _converter = converter;
+        _storyService = storyService;
     }
 
     [HttpGet]
@@ -38,6 +39,7 @@ public class ExchangeController : Controller
     public async Task<string> Exchange(int userId, decimal amount, string from, string to)
     {
         string result;
+        var responseBody = new Response();
         try
         {
             if (!_informer.IsCreatedExchangeRate(from, to))
@@ -45,31 +47,36 @@ public class ExchangeController : Controller
                 var client = new RestClient($"https://api.apilayer.com/fixer/convert?to={to}&from={from}&amount={amount}");
                 var request = new RestRequest();
                 request.Method = Method.Get;
-                request.AddHeader("apikey", "cRT0hBKu4TtHVhEDiOpoV78CW8Jcgr3c");
-                RestResponse response = await client.ExecuteGetAsync(request);
+                request.AddHeader(ApiKeyHeader, _apiKey);
+                var response = await client.ExecuteGetAsync(request);
 
-                _informer.SetExchangeRate(from, to, response.Content);
-                ExchangeRate exchangeRate = _informer.GetExchangeRate(from, to);
-                _converter.Exchange(userId, exchangeRate);
-                result = response.Content.ToString();
+                responseBody = JsonConvert.DeserializeObject<Response>(response.Content);
+                var rate = Decimal.Parse(responseBody.Info.GetPropertyValue<string>("Rate"));
+                _informer.SetExchangeRate(from, to, rate);
+                ExchangeRate? exchangeRate = _informer.GetExchangeRateOrDefault(from, to);
+                _storyService.StoreExchange(userId, exchangeRate);
             }
             else
             {
-                ExchangeRate exchangeRate = _informer.GetExchangeRate(from, to);
-                _converter.Exchange(userId, exchangeRate);
-                dynamic convertedResponse = JsonConvert.DeserializeObject<dynamic>(exchangeRate.CachedResponse);
-                convertedResponse.result = decimal.Parse(convertedResponse.info.rate.ToString()) * amount;
-                convertedResponse.result = convertedResponse.query.amount = amount;
-
-                result = JsonConvert.SerializeObject(convertedResponse.result);
+                ExchangeRate exchangeRate = _informer.GetExchangeRateOrDefault(from, to);
+                _storyService.StoreExchange(userId, exchangeRate);
+                responseBody.Result = (exchangeRate.Rate * amount).ToString();
+                responseBody.Query = new
+                {
+                    amount,
+                    from,
+                    to
+                };
+                responseBody.Success = true;
+                responseBody.Date = exchangeRate.Date.ToString("MM/dd/yyyy");
             }
-        }
+        } 
         catch
         {
-            result = "\"success\":\"false\"";
+            responseBody.Success = false;
         }
 
-        return result;
+        return JsonConvert.SerializeObject(responseBody);
     }
 
     [HttpGet]
@@ -78,39 +85,54 @@ public class ExchangeController : Controller
     {
         var toCurrencies = symbols?.Split(',').ToList();
         var ratesComponent = new JSONBaseComponent("rates");
-
+        var currencies = new Dictionary<string, decimal>();
         toCurrencies?.ForEach(currency =>
         {
-            var rate = _informer.GetExchangeRate(@base, currency);
+            var rate = _informer.GetExchangeRateOrDefault(@base, currency);
             if (rate is null)
             {
                 return;
             }
-
-            //ratesComponent.AddComponent(currency, rate.)
-
+            
             if (_informer.IsCreatedExchangeRate(@base, currency))
             {
-                ratesComponent.AddComponent(currency, _informer.GetExchangeRate(currency))
+                currencies[currency] = _informer.GetExchangeRateOrDefault(@base, currency).Rate;
                 toCurrencies.Remove(currency);
             }
         });
 
-        symbols = String.Join(",", toCurrencies);
-        var urlBuilder = new StringBuilder($"{_apiUrl}/latest?")
-            .AppendIf($"symbols={symbols}", symbols is not null);
-        urlBuilder.AppendIf("&", urlBuilder.ToString().Contains("symbols"))
-            .AppendIf($"base={@base}", @base is not null);
+        var newSymbols = String.Join(",", toCurrencies);
+        Response? responseBody = null;
+        if (String.IsNullOrWhiteSpace(newSymbols))
+        {
+            var urlBuilder = new StringBuilder($"{_apiUrl}/latest?")
+                .AppendIf($"symbols={newSymbols}&", String.IsNullOrWhiteSpace(newSymbols) == false)
+                .AppendIf($"base={@base}", @base is not null);
 
-        var client = new RestClient(urlBuilder.ToString());
-        var request = new RestRequest();
-        request.AddHeader(ApiKeyHeader, _apiKey);
-        var response = await client.ExecuteAsync(request);
-        return response.Content;
+            var client = new RestClient(urlBuilder.ToString());
+            var request = new RestRequest();
+            request.AddHeader(ApiKeyHeader, _apiKey);
+            var response = await client.ExecuteAsync(request);
+            responseBody = JsonConvert.DeserializeObject<Response>(response.Content);
+        }
+
+        responseBody ??= new Response()
+        {
+            Base = @base,
+            Date = DateTime.UtcNow.ToString("MM/dd/yyyy"),
+            Success = true,
+            TimeStamp = DateTime.UtcNow.Millisecond.ToString()
+        };
+        foreach (var kv in currencies)
+        {
+            responseBody.Rates[kv.Key] = kv.Value;
+        }
+
+        return JsonConvert.SerializeObject(responseBody);
     }
 
     [HttpGet]
-    [Route("symbols?")]
+    [Route("symbols")]
     public async Task<string?> GetAvailableCurrencies()
     {
         var client = new RestClient($"{_apiUrl}/symbols");
@@ -141,7 +163,7 @@ public class ExchangeController : Controller
    
     //[HttpGet]
     //[Route("exchangeRate")]
-    //public string GetExchangeRate(string baseCurrency, string[] currencies, DateTime? date = null)
+    //public string GetExchangeRateOrDefault(string baseCurrency, string[] currencies, DateTime? date = null)
     //{
     //    bool isHistorical = date != null;
     //    bool isSuccess = true;
@@ -154,7 +176,7 @@ public class ExchangeController : Controller
     //    {
     //        foreach (var currency in currencies)
     //        {
-    //            exchangeRate = _informer.GetExchangeRate(baseCurrency, currency, date);
+    //            exchangeRate = _informer.GetExchangeRateOrDefault(baseCurrency, currency, date);
     //            rates.AddComponent(currency, exchangeRate.Rate.ToString());
     //        }
     //    }
@@ -177,7 +199,7 @@ public class ExchangeController : Controller
 
     //[HttpGet]
     //[Route("exchange")]
-    //public string Exchange(int userId, decimal amount, string from, string to)
+    //public string StoreExchange(int userId, decimal amount, string from, string to)
     //{
     //    decimal result = 0;
     //    ExchangeRate exchangeRate = new();
@@ -187,8 +209,8 @@ public class ExchangeController : Controller
     //    timer.Start();
     //    try
     //    {
-    //        exchangeRate = _informer.GetExchangeRate(from, to);
-    //        result = _converter.Exchange(userId, amount, exchangeRate);
+    //        exchangeRate = _informer.GetExchangeRateOrDefault(from, to);
+    //        result = _storyService.StoreExchange(userId, amount, exchangeRate);
     //    }
     //    catch
     //    {
@@ -227,8 +249,8 @@ public class ExchangeController : Controller
     //    {
     //        foreach (string currency in currencies)
     //        {
-    //            startRate = _informer.GetExchangeRate(baseCurrency, currency, start);
-    //            endRate = _informer.GetExchangeRate(baseCurrency, currency, end);
+    //            startRate = _informer.GetExchangeRateOrDefault(baseCurrency, currency, start);
+    //            endRate = _informer.GetExchangeRateOrDefault(baseCurrency, currency, end);
 
     //            rateComponent = new RateComponent(currency, startRate.Rate, endRate.Rate);
     //            rates.AddComponent(rateComponent);
@@ -270,7 +292,7 @@ public class ExchangeController : Controller
 
     //            foreach (var currency in currencies)
     //            {
-    //                exchangeRate = _informer.GetExchangeRate(baseCurrency, currency, current);
+    //                exchangeRate = _informer.GetExchangeRateOrDefault(baseCurrency, currency, current);
     //                dates.AddComponent(currency, exchangeRate.Rate.ToString());
     //            }
 

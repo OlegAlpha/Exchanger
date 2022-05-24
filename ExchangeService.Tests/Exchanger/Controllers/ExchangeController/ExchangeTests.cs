@@ -34,7 +34,7 @@ public class ExchangeTests
         configuration["RateLifetimeInCache"].Returns("1800000");
         configuration["MaxCountInPeriod"].Returns("10");
         configuration["ExchangeLimitedPeriodInHours"].Returns("1");
-        var controller = new ExchangerService.Controllers.ExchangeController(new CachedInformer(informator, configuration), new Converter(operation, configuration));
+        var controller = new ExchangerService.Controllers.ExchangeController(new CachedInformer(informator, configuration), new StoryService(operation, configuration));
         return controller;
     }
     [Fact]

@@ -7,7 +7,7 @@ public class ExchangeResponse: JSONBuilder
     {
         AddComponent(info);
         AddComponent("date", dateTime.ToString());
-        AddComponent("success", isSuccess.ToString());
+        AddComponent("Success", isSuccess.ToString());
 
         if (result != null)
         {

@@ -7,14 +7,14 @@ using Microsoft.Extensions.Configuration;
 
 namespace ExchangeService.BusinessLogic.BusinessLogic.RequestProcess;
 
-public class Converter : IConverter
+public class StoryService : IStoryService
 {
     private const string MaxCountInPeriodKey = "MaxCountInPeriod";
     private const string ExchangeLimitedPeriodKey = "ExchangeLimitedPeriodInHours";
     private readonly double _exchangeLimitedPeriodInHours;
     private readonly double _maxCountInPeriod;
     private readonly BasicOperation _operation;
-    public Converter(BasicOperation operation, IConfiguration configuration)
+    public StoryService(BasicOperation operation, IConfiguration configuration)
     {
         _operation = operation;
         _maxCountInPeriod = Double.Parse(configuration[MaxCountInPeriodKey]);

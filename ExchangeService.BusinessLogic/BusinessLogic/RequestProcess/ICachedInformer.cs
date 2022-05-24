@@ -6,5 +6,5 @@ public interface ICachedInformer
 {
     bool IsCreatedExchangeRate(string from, string to);
     ExchangeRate? GetExchangeRate(string from, string to);
-    void SetExchangeRate(string from, string to, string cachedResponse);
+    void SetExchangeRate(string from, string to, decimal rate);
 }
