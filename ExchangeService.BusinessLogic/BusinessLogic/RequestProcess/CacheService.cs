@@ -22,7 +22,7 @@ namespace ExchangeService.BusinessLogic.BusinessLogic.RequestProcess
         private readonly int _rateLifetimeInCache;
         private static readonly ConcurrentDictionary<ExchangeRate, DateTime> s_cachedRates = new();
 
-        public CacheService(IConfiguration configuration,IHistoryService storyService)
+        public CacheService(IConfiguration configuration, IHistoryService storyService)
         {
             _rateLifetimeInCache = Int32.Parse(configuration[RateLifetimeKey]);
             _apiKey = configuration[ApiConfigurationKey];
@@ -220,6 +220,84 @@ namespace ExchangeService.BusinessLogic.BusinessLogic.RequestProcess
             request.AddHeader(ApiKeyHeader, _apiKey);
             var response = await client.ExecuteAsync(request);
             return response.Content;
+        }
+
+        private bool IsCachedRatesWithin(DateTime startDate, DateTime endDate, string[] currencies, string @base)
+        {
+            for (var i = startDate; i < endDate; i = i.AddDays(1))
+            {
+                foreach (var currency in currencies)
+                {
+                    if (!IsCreatedExchangeRate(@base, currency, i))
+                    {
+                        return false;
+                    }
+                }
+            }
+
+            return true;
+        }
+
+        private async Task<string> GetAllRatesInRangeFromServer(DateTime endDate, DateTime startDate, string? @base, string? symbols)
+        {
+            var urlBuilder = new StringBuilder(_apiUrl)
+                .Append($"/timeseries?end_date={endDate.ToString("MM/dd/yyyy")}")
+                .Append($"&start_date={startDate.ToString("MM/dd/yyyy")}")
+                .AppendIf($"&base={@base}", @base is not null)
+                .AppendIf($"&symbols={symbols}", symbols is not null);
+
+            var client = new RestClient(urlBuilder.ToString());
+
+            var request = new RestRequest();
+            request.AddHeader(ApiKeyHeader, "GSUSaL15VGITPxaUApRmfje7H9bII7rj");
+
+            var response = await client.ExecuteAsync(request);
+            return response.Content;
+        }
+
+        private async Task<Response> GetAllRatesInRangeFromCache(DateTime endDate, DateTime startDate, string? @base, string[] currencies)
+        {
+            Response responseBody = new Response();
+
+            for (var i = startDate; i < endDate; i = i.AddDays(1))
+            {
+                string ratesJsonObject = "{";
+
+                foreach (var currency in currencies)
+                {
+                    ExchangeRate rate = GetExchangeRateOrDefault(@base, currency, i);
+                    string rateJson = string.Format("\"{0}\":{1},", currency, rate.Rate.ToString());
+                    ratesJsonObject = string.Concat(ratesJsonObject, rate);
+                }
+
+                ratesJsonObject = ratesJsonObject.Substring(0, ratesJsonObject.Length - 1);
+                ratesJsonObject = string.Concat(ratesJsonObject, "},");
+                responseBody.Rates[i.ToString("yyyy-MM-dd")] = ratesJsonObject;
+            }
+
+            responseBody.Rates[endDate.ToString("yyyy-MM-dd")] =
+            responseBody.Rates[endDate.ToString("yyyy-MM-dd")]
+            .Substring(0, responseBody.Rates[endDate.ToString("yyyy-MM-dd")].Length - 1);
+
+            return responseBody;
+        }
+        public async Task<string> RatesWithinProcess(DateTime endDate, DateTime startDate, string? @base, string? symbols)
+        {
+            string[] currencies = symbols.Split(',');
+
+            if (!IsCachedRatesWithin(startDate, endDate, currencies, @base))
+            {
+                return await GetAllRatesInRangeFromServer(endDate, startDate, @base, symbols);
+            }
+
+            Response responseBody = await GetAllRatesInRangeFromCache(endDate, startDate, @base, currencies);
+
+            responseBody.Base = @base;
+            responseBody.EndDate = endDate.ToString("yyyy-MM-dd");
+            responseBody.StartDate = startDate.ToString("yyyy-MM-dd");
+            responseBody.TimeSeries = true;
+
+            return JsonConvert.SerializeObject(responseBody);
         }
     }
 }

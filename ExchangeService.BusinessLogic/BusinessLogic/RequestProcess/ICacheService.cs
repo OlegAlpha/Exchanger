@@ -10,4 +10,5 @@ public interface ICacheService
     public Task<string> ExchageProcess(int userId, decimal amount, string from, string to);
 Task<string?> LatestRatesProcess(string? @base, string? symbols);
     Task<string?> GetAvailableCurrencies();
+    Task<string?> RatesWithinProcess(DateTime endDate, DateTime startDate, string? @base, string? symbols);
 }
