@@ -17,18 +17,16 @@ namespace ExchangeService.BusinessLogic.BusinessLogic.RequestProcess
         private readonly IHistoryService _storyService;
         private readonly string _apiKey;
         private readonly string _apiUrl;
-        private readonly ICacheService _cacheService;
 
         private const string RateLifetimeKey = "RateLifetimeInCache";
         private readonly int _rateLifetimeInCache;
         private static readonly ConcurrentDictionary<ExchangeRate, DateTime> s_cachedRates = new();
 
-        public CacheService(IConfiguration configuration, ICacheService cache, IHistoryService storyService)
+        public CacheService(IConfiguration configuration,IHistoryService storyService)
         {
             _rateLifetimeInCache = Int32.Parse(configuration[RateLifetimeKey]);
             _apiKey = configuration[ApiConfigurationKey];
             _apiUrl = configuration[ApiUrlKey];
-            _cacheService = cache;
             _storyService = storyService;
         }
 
@@ -100,8 +98,8 @@ namespace ExchangeService.BusinessLogic.BusinessLogic.RequestProcess
 
             responseBody = JsonConvert.DeserializeObject<Response>(response.Content);
             var rate = decimal.Parse(responseBody.Info.GetPropertyValue<string>("Rate"));
-            _cacheService.SetExchangeRate(from, to, rate);
-            ExchangeRate? exchangeRate = _cacheService.GetExchangeRateOrDefault(from, to);
+            SetExchangeRate(from, to, rate);
+            ExchangeRate? exchangeRate = GetExchangeRateOrDefault(from, to);
             _storyService.StoreExchange(userId, exchangeRate);
 
             return responseBody;
@@ -110,7 +108,7 @@ namespace ExchangeService.BusinessLogic.BusinessLogic.RequestProcess
         private Response GetExchangeFromCache(int userId, decimal amount, string from, string to)
         {
             var responseBody = new Response();
-            ExchangeRate exchangeRate = _cacheService.GetExchangeRateOrDefault(from, to);
+            ExchangeRate exchangeRate = GetExchangeRateOrDefault(from, to);
             _storyService.StoreExchange(userId, exchangeRate);
             responseBody.Result = (exchangeRate.Rate * (double)amount).ToString();
             responseBody.Query = new
@@ -128,7 +126,7 @@ namespace ExchangeService.BusinessLogic.BusinessLogic.RequestProcess
             Response responseBody = new();
             try
             {
-                if (_cacheService.IsCreatedExchangeRate(from, to))
+                if (IsCreatedExchangeRate(from, to))
                 {
                     responseBody = GetExchangeFromCache(userId, amount, from, to);
                 }
@@ -174,15 +172,15 @@ namespace ExchangeService.BusinessLogic.BusinessLogic.RequestProcess
 
             toCurrencies?.ForEach(currency =>
             {
-                var rate = _cacheService.GetExchangeRateOrDefault(@base, currency);
+                var rate = GetExchangeRateOrDefault(@base, currency);
                 if (rate is null)
                 {
                     return;
                 }
 
-                if (_cacheService.IsCreatedExchangeRate(@base, currency))
+                if (IsCreatedExchangeRate(@base, currency))
                 {
-                    currencies[currency] = (decimal)_cacheService.GetExchangeRateOrDefault(@base, currency).Rate;
+                    currencies[currency] = (decimal)GetExchangeRateOrDefault(@base, currency).Rate;
                     toCurrencies.Remove(currency);
                 }
             });
