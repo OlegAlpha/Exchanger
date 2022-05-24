@@ -3,29 +3,29 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using ExchangeService.DataAccessLayer.CRUD;
 using ExchangeService.DataAccessLayer.Entities;
+using ExchangeService.DataAccessLayer.Repositories;
 using Microsoft.EntityFrameworkCore;
 
 namespace ExchangeService.DataAccessLayer.Tests
 {
     [TestFixture]
-    public class BasicOperationTests
+    public class ExchangeRepositoryTests
     {
-        private BasicOperation GetOperation()
+        private IExchangeHistoryRepository GetRepository()
         {
             var options = new DbContextOptionsBuilder<Context>()
                 .UseInMemoryDatabase("Test")
                 .Options;
             var context = new Context(options);
-            return new BasicOperation(context);
+            return new ExchangeHistoryRepository(context);
         }
 
         [Test]
         public void Add_ExchangeStory_AddsToDatabase()
         {
-            var operation = GetOperation();
-            operation.Add(new ExchangeStory()
+            var repository = GetRepository();
+            repository.Add(new ExchangeStory()
             {
                 Created = DateTime.UtcNow,
                 Amount = 25,
@@ -39,7 +39,7 @@ namespace ExchangeService.DataAccessLayer.Tests
                 UserId = 1
             });
 
-            var story = operation.FindByUserIdOrDefault(1);
+            var story = repository.FindByUserIdOrDefault(1);
             Assert.That(story, Is.Not.Null);
             Assert.That(story.Rate.From, Is.EqualTo("EUR"));
             Assert.That(story.Rate.To, Is.EqualTo("UAH"));
@@ -48,9 +48,9 @@ namespace ExchangeService.DataAccessLayer.Tests
         [Test]
         public void FindByUserIdOrDefault_NonExistingId_ReturnsNull()
         {
-            var operation = GetOperation();
+            var repository = GetRepository();
 
-            var story = operation.FindByUserIdOrDefault(10);
+            var story = repository.FindByUserIdOrDefault(10);
 
             Assert.That(story, Is.Null);
         }

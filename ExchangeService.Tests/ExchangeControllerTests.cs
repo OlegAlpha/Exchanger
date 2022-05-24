@@ -22,13 +22,13 @@ namespace ExchangeService.Tests
         private ExchangeController GetController()
         {
             var configuration = Substitute.For<IConfiguration>();
-            configuration["API_KEY"].Returns("GSUSaL15VGITPxaUApRmfje7H9bII7rj");
+            configuration["API_KEY"].Returns("cRT0hBKu4TtHVhEDiOpoV78CW8Jcgr3c");
             configuration["API_URL"].Returns("https://api.apilayer.com/fixer");
             configuration["RateLifetimeInCache"].Returns("1800000");
             configuration["MaxCountInPeriod"].Returns("10");
             configuration["ExchangeLimitedPeriodInHours"].Returns("1");
 
-            var cache = new RatesCache(configuration);
+            var cache = new CacheService(configuration);
             var options = new DbContextOptionsBuilder<Context>()
                 .UseInMemoryDatabase("Test")
                 .Options;

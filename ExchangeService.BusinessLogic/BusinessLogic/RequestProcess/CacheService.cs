@@ -4,13 +4,13 @@ using Microsoft.Extensions.Configuration;
 
 namespace ExchangeService.BusinessLogic.BusinessLogic.RequestProcess
 {
-    public class RatesCache : IRatesCache
+    public class CacheService : ICacheService
     {
         private const string RateLifetimeKey = "RateLifetimeInCache";
         private readonly int _rateLifetimeInCache;
         private static readonly ConcurrentDictionary<ExchangeRate, DateTime> s_cachedRates = new();
 
-        public RatesCache(IConfiguration configuration)
+        public CacheService(IConfiguration configuration)
         {
             _rateLifetimeInCache = Int32.Parse(configuration[RateLifetimeKey]);
         }

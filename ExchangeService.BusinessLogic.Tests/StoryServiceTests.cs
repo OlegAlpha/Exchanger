@@ -26,7 +26,7 @@ namespace ExchangerService.BusinessLogic.Tests
                 .UseInMemoryDatabase("Test")
                 .Options;
             var context = new Context(options);
-            var operation = new BasicOperation(context);
+            var operation = new ExchangeHistoryRepository(context);
 
             return new StoryService(operation, configuration);
         }

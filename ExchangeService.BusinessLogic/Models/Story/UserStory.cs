@@ -1,20 +1,20 @@
 ﻿using System.Collections.ObjectModel;
 using ExchangeService.BusinessLogic.Models.LocalAlternatives;
-using ExchangeService.DataAccessLayer.CRUD;
 using ExchangeService.DataAccessLayer.Entities;
+using ExchangeService.DataAccessLayer.Repositories;
 
 namespace ExchangeService.BusinessLogic.Models.Story;
 public class UserStory
 {
     public int Id { get; }
-    private readonly BasicOperation _operation;
+    private readonly IExchangeHistoryRepository _repository;
     public ObservableCollection<LocalExchangeStory> ExchangeStories { get; set; }
 
-    public UserStory(int Id, BasicOperation operation)
+    public UserStory(int id, IExchangeHistoryRepository repository)
     {
-        this.Id = Id;
+        this.Id = id;
         ExchangeStories = new ObservableCollection<LocalExchangeStory>();
-        _operation = operation;
+        _repository = repository;
 
         ExchangeStories.CollectionChanged += ExchangeStories_CollectionChanged;
     }
@@ -36,7 +36,7 @@ public class UserStory
                             Created = DateTime.UtcNow,
                         };
 
-                       _operation.Add(exchangeStory);
+                       _repository.Add(exchangeStory);
                     }
                 }
                 break;
