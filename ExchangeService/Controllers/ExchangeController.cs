@@ -1,5 +1,4 @@
 ﻿using System.Text;
-using ExchangeService.BusinessLogic.Builders.JSON.Components.BaseComponent;
 using ExchangeService.BusinessLogic.BusinessLogic.RequestProcess;
 using ExchangeService.BusinessLogic.Context;
 using ExchangeService.DataAccessLayer.Entities;
@@ -19,13 +18,13 @@ public class ExchangeController : ControllerBase
     private readonly string _apiKey;
     private readonly string _apiUrl;
     private readonly ICacheService _cacheService;
-    private readonly IStoryService _storyService;
+    private readonly IHistoryService _storyService;
 
-    public ExchangeController(IConfiguration configuration, ICacheService cacheService, IStoryService storyService)
+    public ExchangeController(IConfiguration configuration, ICacheService cache, IHistoryService storyService)
     {
         _apiKey = configuration[ApiConfigurationKey];
         _apiUrl = configuration[ApiUrlKey];
-        _cacheService = cacheService;
+        _cacheService = cache;
         _storyService = storyService;
     }
 
@@ -54,7 +53,7 @@ public class ExchangeController : ControllerBase
             {
                 ExchangeRate exchangeRate = _cacheService.GetExchangeRateOrDefault(from, to);
                 _storyService.StoreExchange(userId, exchangeRate);
-                responseBody.Result = (exchangeRate.Rate * amount).ToString();
+                responseBody.Result = (exchangeRate.Rate * (double)amount).ToString();
                 responseBody.Query = new
                 {
                     amount,
@@ -89,7 +88,7 @@ public class ExchangeController : ControllerBase
 
             if (_cacheService.IsCreatedExchangeRate(@base, currency))
             {
-                currencies[currency] = _cacheService.GetExchangeRateOrDefault(@base, currency).Rate;
+                currencies[currency] = (decimal)_cacheService.GetExchangeRateOrDefault(@base, currency).Rate;
                 toCurrencies.Remove(currency);
             }
         });

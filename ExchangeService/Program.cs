@@ -1,4 +1,4 @@
-using DataBaseLayer;
+
 using ExchangeService.BusinessLogic.BusinessLogic.RequestProcess;
 using ExchangeService.DataAccessLayer;
 using ExchangeService.DataAccessLayer.Repositories;
@@ -9,7 +9,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 var services = builder.Services;
 services.AddScoped<ICacheService, CacheService>();
-services.AddScoped<IStoryService, StoryService>();
+services.AddScoped<IHistoryService, HistoryService>();
 services.AddScoped<IExchangeHistoryRepository, ExchangeHistoryRepository>();
 
 var configuration = builder.Configuration;

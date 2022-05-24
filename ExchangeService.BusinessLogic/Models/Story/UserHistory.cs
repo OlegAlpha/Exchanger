@@ -4,16 +4,16 @@ using ExchangeService.DataAccessLayer.Entities;
 using ExchangeService.DataAccessLayer.Repositories;
 
 namespace ExchangeService.BusinessLogic.Models.Story;
-public class UserStory
+public class UserHistory
 {
     public int Id { get; }
     private readonly IExchangeHistoryRepository _repository;
-    public ObservableCollection<LocalExchangeStory> ExchangeStories { get; set; }
+    public ObservableCollection<LocalExchangeHistory> ExchangeStories { get; set; }
 
-    public UserStory(int id, IExchangeHistoryRepository repository)
+    public UserHistory(int id, IExchangeHistoryRepository repository)
     {
         this.Id = id;
-        ExchangeStories = new ObservableCollection<LocalExchangeStory>();
+        ExchangeStories = new ObservableCollection<LocalExchangeHistory>();
         _repository = repository;
 
         ExchangeStories.CollectionChanged += ExchangeStories_CollectionChanged;
@@ -26,17 +26,17 @@ public class UserStory
             case System.Collections.Specialized.NotifyCollectionChangedAction.Add:
                 {
 
-                    foreach (LocalExchangeStory item in e.NewItems)
+                    foreach (LocalExchangeHistory item in e.NewItems)
                     {
-                        ExchangeStory exchangeStory = new ExchangeStory()
+                        ExchangeHistory exchangeHistory = new ExchangeHistory()
                         {
                             UserId = Id,
-                            Amount = item.Amount,
+                            Amount = (double)item.Amount,
                             Rate = item.Rate,
                             Created = DateTime.UtcNow,
                         };
 
-                       _repository.Add(exchangeStory);
+                       _repository.Add(exchangeHistory);
                     }
                 }
                 break;

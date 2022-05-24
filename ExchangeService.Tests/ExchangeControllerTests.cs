@@ -7,8 +7,8 @@ using ExchangeService.BusinessLogic.BusinessLogic.RequestProcess;
 using ExchangeService.BusinessLogic.Context;
 using ExchangeService.Controllers;
 using ExchangeService.DataAccessLayer;
-using ExchangeService.DataAccessLayer.CRUD;
 using ExchangeService.DataAccessLayer.Entities;
+using ExchangeService.DataAccessLayer.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
@@ -33,8 +33,8 @@ namespace ExchangeService.Tests
                 .UseInMemoryDatabase("Test")
                 .Options;
             var context = new Context(options);
-            var operation = new BasicOperation(context);
-            //operation.Add(new ExchangeStory()
+            var repository = new ExchangeHistoryRepository(context);
+            //operation.Add(new ExchangeHistory()
             //{
             //    UserId = 1,
             //    Created = DateTime.UtcNow.AddMinutes(-10),
@@ -46,8 +46,8 @@ namespace ExchangeService.Tests
             //        Rate = 35m
             //    }
             //});
-            var storyService = new StoryService(operation, configuration);
-            return new ExchangeController(configuration, cache, storyService);
+            var historyService = new HistoryService(repository, configuration);
+            return new ExchangeController(configuration, cache, historyService);
         }
 
         [Test]
