@@ -1,18 +1,18 @@
 ﻿using System;
-using ExchangerService.DataAccessLayer;
-using ExchangerService.DataAccessLayer.CRUD;
-using ExchangerService.DataAccessLayer.Entities;
 using ExchangeService.BusinessLogic.BusinessLogic.RequestProcess;
+using ExchangeService.DataAccessLayer;
+using ExchangeService.DataAccessLayer.CRUD;
+using ExchangeService.DataAccessLayer.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using NSubstitute;
 using Xunit;
 
-namespace ExchangerService.Tests.Exchanger.Controllers.ExchangeController;
+namespace ExchangeService.Tests.Exchanger.Controllers.ExchangeController;
 public class GetExchangeStory
 {
-    private ExchangerService.Controllers.ExchangeController GetController(bool fillDb = false)
+    private ExchangeService.Controllers.ExchangeController GetController(bool fillDb = false)
     {
         var options = new DbContextOptionsBuilder<Context>().UseInMemoryDatabase("Test").Options;
         var context = new Context(options);
@@ -37,7 +37,7 @@ public class GetExchangeStory
         configuration["RateLifetimeInCache"].Returns("1800000");
         configuration["MaxCountInPeriod"].Returns("10");
         configuration["ExchangeLimitedPeriodInHours"].Returns("1");
-        var controller = new ExchangerService.Controllers.ExchangeController(new CachedInformer(informer, configuration), new StoryService(operation, configuration));
+        var controller = new ExchangeService.Controllers.ExchangeController(new CachedInformer(informer, configuration), new StoryService(operation, configuration));
         return controller;
     }
     [Fact]

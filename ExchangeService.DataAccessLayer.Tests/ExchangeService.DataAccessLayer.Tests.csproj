@@ -11,7 +11,6 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="6.0.5" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.1.0" />
-    <PackageReference Include="NSubstitute" Version="4.3.0" />
     <PackageReference Include="NUnit" Version="3.13.3" />
     <PackageReference Include="NUnit3TestAdapter" Version="4.2.1" />
     <PackageReference Include="NUnit.Analyzers" Version="3.3.0" />
@@ -19,8 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\ExchangeService.BusinessLogic\ExchangeService.BusinessLogic.csproj" />
-    <ProjectReference Include="..\ExchangeService\ExchangeService.csproj" />
+    <ProjectReference Include="..\ExchangeService.DataAccessLayer\ExchangeService.DataAccessLayer.csproj" />
   </ItemGroup>
 
 </Project>
