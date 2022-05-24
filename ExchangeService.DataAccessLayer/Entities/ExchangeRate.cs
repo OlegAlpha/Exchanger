@@ -9,10 +9,4 @@ public class ExchangeRate
     public string To { get; set; }
     public double Rate { get; set; }
     public DateTime? Date { get; set; }
-    //public object CachedResponse { get; set; }
-
-    public override int GetHashCode()
-    {
-        return HashCode.Combine(From, To);
-    }
 }
