@@ -1,7 +1,5 @@
-﻿using System.Text.Json.Serialization;
-using ExchangeService.DataAccessLayer.Entities;
+﻿using ExchangeService.DataAccessLayer.Entities;
 using Microsoft.EntityFrameworkCore;
-using Newtonsoft.Json;
 
 namespace ExchangeService.DataAccessLayer;
 public class Context : DbContext

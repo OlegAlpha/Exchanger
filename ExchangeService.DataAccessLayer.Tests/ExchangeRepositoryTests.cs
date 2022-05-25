@@ -1,11 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using ExchangeService.DataAccessLayer.Entities;
+﻿using ExchangeService.DataAccessLayer.Entities;
 using ExchangeService.DataAccessLayer.Repositories;
 using Microsoft.EntityFrameworkCore;
+using NUnit.Framework;
 
 namespace ExchangeService.DataAccessLayer.Tests
 {
@@ -39,10 +35,12 @@ namespace ExchangeService.DataAccessLayer.Tests
                 UserId = 1
             });
 
-            var history = repository.FindByUserIdOrDefault(1);
-            Assert.That(history, Is.Not.Null);
-           // Assert.That(history.Rate.From, Is.EqualTo("EUR"));
-           // Assert.That(history.Rate.To, Is.EqualTo("UAH"));
+            var histories = repository.FindByUserIdOrDefault(1).Result;
+            Assert.That(histories, Is.Not.Empty);
+            var history = histories.First();
+            Assert.That(history.Rate.From, Is.EqualTo("EUR"));
+            Assert.That(history.Rate.To, Is.EqualTo("UAH"));
+            Assert.That(history.Amount, Is.EqualTo(25).Within(1e-3));
         }
 
         [Test]
@@ -50,7 +48,7 @@ namespace ExchangeService.DataAccessLayer.Tests
         {
             var repository = GetRepository();
 
-            var history = repository.FindByUserIdOrDefault(10);
+            var history = repository.FindByUserIdOrDefault(10).Result.FirstOrDefault();
 
             Assert.That(history, Is.Null);
         }

@@ -7,7 +7,7 @@ namespace ExchangeService.BusinessLogic.BusinessLogic.RequestProcess;
 
 public class HistoryService : IHistoryService
 {
-    private const string MaxCountInPeriodKey = "MaxCountInPeriod";
+    private const string MaxExchangeCountKey = "MaxExchangeCountKey";
     private const string ExchangeLimitedPeriodKey = "ExchangeLimitedPeriodInHours";
     private readonly double _exchangeLimitedPeriodInHours;
     private readonly double _maxCountInPeriod;
@@ -15,7 +15,7 @@ public class HistoryService : IHistoryService
     public HistoryService(IExchangeHistoryRepository repository, IConfiguration configuration)
     {
         _repository = repository;
-        _maxCountInPeriod = Double.Parse(configuration[MaxCountInPeriodKey]);
+        _maxCountInPeriod = Double.Parse(configuration[MaxExchangeCountKey]);
         _exchangeLimitedPeriodInHours = Double.Parse(configuration[ExchangeLimitedPeriodKey]);
     }
 
@@ -27,8 +27,8 @@ public class HistoryService : IHistoryService
             Created = DateTime.UtcNow,
             Rate = exchangeRate,
         };
+
         _repository.Add(history);
-        
     }
 
     public async Task<bool> ExchangesCountIsValid(int userId)
