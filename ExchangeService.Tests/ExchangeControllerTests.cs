@@ -1,8 +1,21 @@
-﻿using ExchangeService.BusinessLogic.BusinessLogic.Interfaces.Services;
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using ExchangeService.BusinessLogic.BusinessLogic.Interfaces.Services;
+using ExchangeService.BusinessLogic.BusinessLogic.RequestProcess;
 using ExchangeService.BusinessLogic.Context;
 using ExchangeService.Controllers;
-using NUnit.Framework;
+using ExchangeService.DataAccessLayer;
+using ExchangeService.DataAccessLayer.Entities;
+using ExchangeService.DataAccessLayer.Repositories;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using NSubstitute;
 
 namespace ExchangeService.Tests
@@ -114,7 +127,7 @@ namespace ExchangeService.Tests
         {
             var controller = GetController();
 
-            var response = controller.Exchange(0, 10, "EUR", "UAH").Result;
+            var response = controller.PostExchange(0, 10, "EUR", "UAH").Result;
             var responseBody = JsonConvert.DeserializeObject<Response>(response);
 
             Assert.That(responseBody.Success, Is.True);
@@ -127,7 +140,7 @@ namespace ExchangeService.Tests
         public void GetLatestRate_BaseUsdEmptySymbols_ReturnsCorrectResponse()
         {
             var controller = GetController();
-            var response = controller.GetLatestRates("USD", null).Result;
+            var response = controller.PostLatestRates("USD", null).Result;
 
             var responseBody = JsonConvert.DeserializeObject<Response>(response);
 
@@ -143,7 +156,7 @@ namespace ExchangeService.Tests
         public void GetAvailableCurrencies_Currencies_ReturnsCorrectResponse()
         {
             var controller = GetController();
-            string response = controller.GetAvailableCurrencies().Result;
+            string response = controller.PostAvailableCurrencies().Result;
             var responseBody = JsonConvert.DeserializeObject<Response>(response);
             var expectedSymbols = new Dictionary<string, object>()
             {
@@ -161,7 +174,7 @@ namespace ExchangeService.Tests
         public void GetRatesWithin_ReturnsCorrectResponse()
         {
             var controller = GetController();
-            var response = controller.GetRatesWithin(
+            var response = controller.PostRatesWithin(
                 _endDate,
                 _startDate,
                 "EUR",
@@ -203,7 +216,7 @@ namespace ExchangeService.Tests
             };
             var expectedRatesJson = JsonConvert.SerializeObject(expectedRates);
             var controller = GetController();
-            var response = controller.Fluctuation(_startDate, _endDate, @base, _currencies).Result;
+            var response = controller.PostFluctuation(_startDate, _endDate, @base, _currencies).Result;
             var responseBody = JsonConvert.DeserializeObject<Response>(response);
             var ratesJson = JsonConvert.SerializeObject(responseBody.Rates);
             Assert.That(responseBody.Success, Is.True);

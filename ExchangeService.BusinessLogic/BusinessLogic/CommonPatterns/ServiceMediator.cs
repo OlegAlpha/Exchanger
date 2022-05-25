@@ -3,6 +3,11 @@ using ExchangeService.BusinessLogic.BusinessLogic.RequestProcess;
 using ExchangeService.BusinessLogic.Context;
 using ExchangeService.DataAccessLayer.Entities;
 using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace ExchangeService.BusinessLogic.BusinessLogic.CommonPatterns;
 public class ServiceMediator : IRedirectService
@@ -29,7 +34,7 @@ public class ServiceMediator : IRedirectService
             }
             else
             {
-                responseBody = await _apiService.RequestToExchange(userId, amount, from, to);
+                responseBody = await _apiService.PostRequestToExchange(userId, amount, from, to);
 
 
                 ExchangeRate? exchangeRate = _cacheService.GetExchangeRateOrDefault(from, to);
@@ -65,7 +70,7 @@ public class ServiceMediator : IRedirectService
         });
         var newSymbols = String.Join(",", toCurrencies);
 
-        Response responseBody = await _apiService.GetLatestRatesWithUncachedData(newSymbols, @base, symbols);
+        Response responseBody = await _apiService.PostLatestRatesWithUncachedData(newSymbols, @base, symbols);
 
         foreach (var kv in currencies)
         {
@@ -80,7 +85,7 @@ public class ServiceMediator : IRedirectService
 
         if (!_cacheService.IsCachedRatesWithin(startDate, endDate, currencies, @base))
         {
-            return await _apiService.GetAllRatesInRangeFromServer(endDate, startDate, @base, symbols);
+            return await _apiService.PostAllRatesInRangeFromServer(endDate, startDate, @base, symbols);
         }
 
         Response responseBody = await _cacheService.GetAllRatesInRangeFromCache(endDate, startDate, @base, currencies);
@@ -129,12 +134,12 @@ public class ServiceMediator : IRedirectService
             
             if (uncachedCurrencies.Count > 0)
             {
-                responseBody = await _apiService.GetUncachedFluctuation(start, end, baseCurrency, uncachedCurrencies);
+                responseBody = await _apiService.PostUncachedFluctuation(start, end, baseCurrency, uncachedCurrencies);
             }
 
             else if (currencies is null)
             {
-                responseBody = await _apiService.GetUncachedFluctuation(start, end, baseCurrency, currencies);
+                responseBody = await _apiService.PostUncachedFluctuation(start, end, baseCurrency, currencies);
             }
             else
             {
@@ -159,7 +164,7 @@ public class ServiceMediator : IRedirectService
     }
     public async Task<string?> GetAvailableCurrencies()
     {
-        return await _apiService.GetAvailableCurrencies();
+        return await _apiService.PostAvailableCurrencies();
     }
 
 }
