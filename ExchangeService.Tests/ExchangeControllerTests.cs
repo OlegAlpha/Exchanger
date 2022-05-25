@@ -26,16 +26,19 @@ namespace ExchangeService.Tests
             Dictionary<string, object> ungroupdepConfigurations = JsonConvert.DeserializeObject<Dictionary<string, object>>(configurationData);
             var configuration = Substitute.For<IConfiguration>();
 
-            foreach(KeyValuePair<string, object> kv in ungroupdepConfigurations)
+            foreach (KeyValuePair<string, object> kv in ungroupdepConfigurations)
             {
-                configuration[kv.Key].Returns( kv.Value.ToString());
+                configuration[kv.Key].Returns(kv.Value.ToString());
             }
-            var cache = new CacheService(configuration);
+
             var options = new DbContextOptionsBuilder<Context>()
-                .UseInMemoryDatabase("Test")
-                .Options;
+        .UseInMemoryDatabase("Test")
+        .Options;
             var context = new Context(options);
             var repository = new ExchangeHistoryRepository(context);
+            var historyService = new HistoryService(repository, configuration);
+            var cache = new CacheService(configuration, historyService);
+
             //operation.Add(new ExchangeHistory()
             //{
             //    UserId = 1,
@@ -47,8 +50,7 @@ namespace ExchangeService.Tests
             //        To = "UAH",
             //        Rate = 35m
             //    }
-            //});
-            var historyService = new HistoryService(repository, configuration);
+            //});;
             return new ExchangeController(configuration, cache, historyService);
         }
 

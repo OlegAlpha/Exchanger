@@ -4,6 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using ExchangeService.BusinessLogic.BusinessLogic.RequestProcess;
+using ExchangeService.DataAccessLayer;
+using ExchangeService.DataAccessLayer.Repositories;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using NSubstitute;
@@ -23,7 +26,14 @@ namespace ExchangerService.BusinessLogic.Tests
             {
                 configuration[kv.Key].Returns(kv.Value.ToString());
             }
-            var informer = new CacheService(configuration);
+
+            var options = new DbContextOptionsBuilder<Context>()
+        .UseInMemoryDatabase("Test")
+        .Options;
+            var context = new Context(options);
+            var repository = new ExchangeHistoryRepository(context);
+            var historyService = new HistoryService(repository, configuration);
+            var informer = new CacheService(configuration, historyService);
             return informer;
         }
 

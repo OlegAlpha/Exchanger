@@ -1,4 +1,6 @@
 
+using ExchangeService.BusinessLogic.BusinessLogic.CommonPatterns;
+using ExchangeService.BusinessLogic.BusinessLogic.Interfaces.Services;
 using ExchangeService.BusinessLogic.BusinessLogic.RequestProcess;
 using ExchangeService.DataAccessLayer;
 using ExchangeService.DataAccessLayer.Repositories;
@@ -9,8 +11,13 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 var services = builder.Services;
 services.AddScoped<ICacheService, CacheService>();
+services.AddScoped<IUncacheService, UncacheService>();
 services.AddScoped<IHistoryService, HistoryService>();
 services.AddScoped<IExchangeHistoryRepository, ExchangeHistoryRepository>();
+services.AddScoped<IRedirectRequests,RequestMediator>(mediator => 
+new RequestMediator(mediator.GetRequiredService<ICacheService>(),
+    mediator.GetRequiredService<IUncacheService>(),
+    mediator.GetRequiredService<IHistoryService>())) ;
 
 var configuration = builder.Configuration;
 
