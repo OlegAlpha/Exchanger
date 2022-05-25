@@ -1,8 +1,21 @@
-﻿using ExchangeService.BusinessLogic.BusinessLogic.Interfaces.Services;
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using ExchangeService.BusinessLogic.BusinessLogic.Interfaces.Services;
+using ExchangeService.BusinessLogic.BusinessLogic.RequestProcess;
 using ExchangeService.BusinessLogic.Context;
 using ExchangeService.Controllers;
-using NUnit.Framework;
+using ExchangeService.DataAccessLayer;
+using ExchangeService.DataAccessLayer.Entities;
+using ExchangeService.DataAccessLayer.Repositories;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using NSubstitute;
 
 namespace ExchangeService.Tests

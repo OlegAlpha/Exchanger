@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ExchangeService.DataAccessLayer.Entities;
 public class ExchangeHistory

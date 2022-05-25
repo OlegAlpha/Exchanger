@@ -1,5 +1,11 @@
-﻿using ExchangeService.BusinessLogic.BusinessLogic.Interfaces.Services;
+﻿using System.Text;
+using ExchangeService.BusinessLogic.BusinessLogic.Interfaces.Services;
+using ExchangeService.BusinessLogic.BusinessLogic.RequestProcess;
+using ExchangeService.BusinessLogic.Context;
+using ExchangeService.DataAccessLayer.Entities;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
+using RestSharp;
 
 namespace ExchangeService.Controllers;
 [ApiController]
