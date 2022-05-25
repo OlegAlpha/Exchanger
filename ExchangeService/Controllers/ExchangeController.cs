@@ -21,35 +21,35 @@ public class ExchangeController : ControllerBase
 
     [HttpPost]
     [Route("exchange")]
-    public async Task<string> PostExchange(int userId, decimal amount, string from, string to)
+    public async Task<string> GetExchange(int userId, decimal amount, string from, string to)
     {
         return await _redirect.ExchangeProcess(userId, amount, from, to);
     }
 
     [HttpGet]
     [Route("latest")]
-    public async Task<string?> PostLatestRates(string? @base, string? symbols)
+    public async Task<string?> GetLatestRates(string? @base, string? symbols)
     {
         return await _redirect.LatestRatesProcess(@base, symbols);
     }
 
     [HttpGet]
     [Route("symbols")]
-    public async Task<string?> PostAvailableCurrencies()
+    public async Task<string?> GetAvailableCurrencies()
     {
         return await _redirect.GetAvailableCurrencies();
     }
 
     [HttpGet]
     [Route("timeseries")]
-    public async Task<string?> PostRatesWithin(DateTime endDate, DateTime startDate, string? @base, string? symbols)
+    public async Task<string?> GetRatesWithin(DateTime endDate, DateTime startDate, string? @base, string? symbols)
     {
         return await _redirect.RatesWithinProcess(endDate, startDate, @base, symbols);
     }
 
     [HttpGet]
     [Route("fluctuation")]
-    public async Task<string> PostFluctuation(DateTime start, DateTime end, string? baseCurrency, string[]? currencies)
+    public async Task<string> GetFluctuation(DateTime start, DateTime end, string? baseCurrency, string[]? currencies)
     {
         return await _redirect.FluctuationProcessing(start, end, baseCurrency, currencies);
     }
