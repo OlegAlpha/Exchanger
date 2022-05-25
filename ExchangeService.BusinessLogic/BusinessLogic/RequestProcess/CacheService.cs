@@ -5,17 +5,15 @@ using ExchangeService.DataAccessLayer.Entities;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using ExchangeService;
+using ExchangeService.BusinessLogic.BusinessLogic.Interfaces.Services;
 using RestSharp;
 
 namespace ExchangeService.BusinessLogic.BusinessLogic.RequestProcess
 {
     public class CacheService : ICacheService
     {
-      
-        private readonly IHistoryService _storyService;
-
-
         private const string RateLifetimeKey = "RateLifetimeInCache";
+        private readonly IHistoryService _storyService;
         private readonly int _rateLifetimeInCache;
         private static readonly ConcurrentDictionary<ExchangeRate, DateTime> s_cachedRates = new();
 
@@ -114,35 +112,26 @@ namespace ExchangeService.BusinessLogic.BusinessLogic.RequestProcess
         {
             Response responseBody = new Response();
 
-            for (var i = startDate; i < endDate; i = i.AddDays(1))
+            for (var i = startDate; i <= endDate; i = i.AddDays(1))
             {
-                string ratesJsonObject = "{";
+                responseBody.Rates[i.ToString("MM/dd/yyyy")] = new Dictionary<string, double>();
 
                 foreach (var currency in currencies)
                 {
                     ExchangeRate rate = GetExchangeRateOrDefault(@base, currency, i);
-                    string rateJson = string.Format("\"{0}\":{1},", currency, rate.Rate.ToString());
-                    ratesJsonObject = string.Concat(ratesJsonObject, rate);
+                    responseBody.Rates[currency] = rate.Rate;
                 }
-
-                ratesJsonObject = ratesJsonObject.Substring(0, ratesJsonObject.Length - 1);
-                ratesJsonObject = string.Concat(ratesJsonObject, "},");
-                responseBody.Rates[i.ToString("yyyy-MM-dd")] = ratesJsonObject;
             }
-
-            responseBody.Rates[endDate.ToString("yyyy-MM-dd")] =
-            responseBody.Rates[endDate.ToString("yyyy-MM-dd")]
-            .Substring(0, responseBody.Rates[endDate.ToString("yyyy-MM-dd")].Length - 1);
 
             return responseBody;
         }
-        public async Task<Response> GetCachedFluctuation(string baseCurrency, DateTime start, DateTime end, List<string> cachedCurrencies, Response responseBody)
+        public async Task<Response> GetCachedFluctuation(string baseCurrency, DateTime start, DateTime end, IEnumerable<string> currencies, Response responseBody)
         {
            
-            foreach (var currency in cachedCurrencies)
+            foreach (var currency in currencies)
             {
-                ExchangeRate startRate = GetExchangeRateOrDefault(baseCurrency, currency, start);
-                ExchangeRate endRate = GetExchangeRateOrDefault(baseCurrency, currency, end);
+                ExchangeRate? startRate = GetExchangeRateOrDefault(baseCurrency, currency, start);
+                ExchangeRate? endRate = GetExchangeRateOrDefault(baseCurrency, currency, end);
 
                 string jsonObject = string.Format(
                     "{ \"change\":\"{0}\" \r\n \"change_pct\":\"{1}\" \r\n \"end_rate\":\"{2}\" \r\n \"start_rate\":\"{3}\" \r\n}",

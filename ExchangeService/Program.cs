@@ -11,12 +11,12 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 var services = builder.Services;
 services.AddScoped<ICacheService, CacheService>();
-services.AddScoped<IUncacheService, UncacheService>();
+services.AddScoped<IApiService, ApiService>();
 services.AddScoped<IHistoryService, HistoryService>();
 services.AddScoped<IExchangeHistoryRepository, ExchangeHistoryRepository>();
-services.AddScoped<IRedirectRequests,RequestMediator>(mediator => 
-new RequestMediator(mediator.GetRequiredService<ICacheService>(),
-    mediator.GetRequiredService<IUncacheService>(),
+services.AddScoped<IRedirectService,ServiceMediator>(mediator => 
+new ServiceMediator(mediator.GetRequiredService<ICacheService>(),
+    mediator.GetRequiredService<IApiService>(),
     mediator.GetRequiredService<IHistoryService>())) ;
 
 var configuration = builder.Configuration;
@@ -37,11 +37,5 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
-
-app.UseAuthorization();
-
-app.MapControllerRoute(
-    name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}");
 
 app.Run();

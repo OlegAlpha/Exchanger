@@ -7,15 +7,22 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Configuration;
 
 namespace ExchangeService.BusinessLogic.BusinessLogic.RequestProcess;
-public class UncacheService: IUncacheService
+public class ApiService : IApiService
 {
     private const string ApiConfigurationKey = "API_KEY";
     private const string ApiUrlKey = "API_URL";
     private const string ApiKeyHeader = "apikey";
     private readonly string _apiKey;
     private readonly string _apiUrl;
+
+    public ApiService(IConfiguration configuration)
+    {
+        _apiKey = configuration[ApiConfigurationKey];
+        _apiUrl = configuration[ApiUrlKey];
+    }
 
     public  async Task<string> GetAllRatesInRangeFromServer(DateTime endDate, DateTime startDate, string? @base, string? symbols)
     {
@@ -56,19 +63,16 @@ public class UncacheService: IUncacheService
     }
     private  async Task<Response> GetLatestUncachedRates(string? @base, string newSymbols)
     {
-        Response responseBody;
-
         var urlBuilder = new StringBuilder($"{_apiUrl}/latest?")
-            .AppendIf($"symbols={newSymbols}&", String.IsNullOrWhiteSpace(newSymbols) == false)
+            .AppendIf($"symbols={newSymbols}&", !String.IsNullOrWhiteSpace(newSymbols))
             .AppendIf($"base={@base}", @base is not null);
 
         var client = new RestClient(urlBuilder.ToString());
         var request = new RestRequest();
         request.AddHeader(ApiKeyHeader, _apiKey);
         var response = await client.ExecuteAsync(request);
-        responseBody = JsonConvert.DeserializeObject<Response>(response.Content);
 
-        return responseBody;
+        return JsonConvert.DeserializeObject<Response>(response.Content);
     }
     public async Task<string> GetAvailableCurrencies()
     {
@@ -78,10 +82,13 @@ public class UncacheService: IUncacheService
         var response = await client.ExecuteAsync(request);
         return response.Content;
     }
-    public  async Task<Response> ReguestToExchange(int userId, decimal amount, string from, string to)
+    public  async Task<Response> RequestToExchange(int userId, decimal amount, string from, string to)
     {
-        string url = new StringBuilder(_apiUrl).Append("/convert?")
-                .Append($"to={to}").Append($"&from={from}").Append($"&amount={amount}").ToString();
+        string url = new StringBuilder($"{_apiUrl}/convert?")
+                .Append($"to={to}&")
+                .Append($"from={from}&")
+                .Append($"amount={amount}")
+                .ToString();
         var client = new RestClient(url);
         var request = new RestRequest();
         request.Method = Method.Get;
@@ -94,22 +101,21 @@ public class UncacheService: IUncacheService
 
         return responseBody;
     }
-    public async Task<Response> GetUncachedFluctuation(DateTime start, DateTime end, string baseCurrency, List<string> uncahcedCurrencies)
+    public async Task<Response> GetUncachedFluctuation(DateTime start, DateTime end, string? baseCurrency, IEnumerable<string>? currencies)
     {
-        string currenciesRequest = string.Join(',', uncahcedCurrencies);
+        string currenciesRequest = string.Join(',', currencies ?? Enumerable.Empty<string>());
 
         var urlBuilder = new StringBuilder($"{_apiUrl}/latest?")
-     .AppendIf($"start_date={start.ToString("yyyy-MM-dd")}&", true)
-     .AppendIf($"end_date={end.ToString("yyyy-MM-dd")}", true)
-     .AppendIf($"base={baseCurrency}", string.IsNullOrWhiteSpace(baseCurrency))
-     .AppendIf($"symbols={currenciesRequest}", string.IsNullOrWhiteSpace(currenciesRequest));
+            .Append($"start_date={start.ToString("yyyy-MM-dd")}&")
+            .Append($"end_date={end.ToString("yyyy-MM-dd")}&")
+            .AppendIf($"base={baseCurrency}&", !string.IsNullOrWhiteSpace(baseCurrency))
+            .AppendIf($"symbols={currenciesRequest}", !string.IsNullOrWhiteSpace(currenciesRequest));
 
         var client = new RestClient(urlBuilder.ToString());
         var request = new RestRequest();
         request.AddHeader(ApiKeyHeader, _apiKey);
         var response = await client.ExecuteAsync(request);
-        Response responseBody = JsonConvert.DeserializeObject<Response>(response.Content);
 
-        return responseBody;
+        return JsonConvert.DeserializeObject<Response>(response.Content);
     }
 }

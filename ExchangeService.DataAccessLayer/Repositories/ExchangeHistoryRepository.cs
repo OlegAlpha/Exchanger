@@ -18,7 +18,7 @@ public class ExchangeHistoryRepository : IExchangeHistoryRepository
         await _context.SaveChangesAsync();
     }
 
-    public  async Task<IEnumerable<ExchangeHistory>?> FindByUserIdOrDefault(int userId)
+    public async Task<IEnumerable<ExchangeHistory>> FindByUserIdOrDefault(int userId)
     {
         return await _exchangeHistories.Where(x => x.UserId == userId).ToListAsync();
     }

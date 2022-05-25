@@ -19,7 +19,7 @@ public class Response
     public string? EndDate { get; set; }
 
     [JsonProperty("rates", NullValueHandling = NullValueHandling.Ignore)]
-    public Dictionary<string, string>? Rates { get; set; }
+    public Dictionary<string, object>? Rates { get; set; }
     [JsonProperty("success", NullValueHandling = NullValueHandling.Ignore)]
     public bool? Success { get; set; } = true;
     [JsonProperty("fluctuation", NullValueHandling = NullValueHandling.Ignore)]
@@ -34,6 +34,8 @@ public class Response
     public string? TimeStamp { get; set; }
     [JsonProperty("result", NullValueHandling = NullValueHandling.Ignore)]
     public string? Result { get; set; }
+    [JsonProperty("symbols", NullValueHandling = NullValueHandling.Ignore)]
+    public Dictionary<string, string>? Symbols { get; set; }
     [JsonProperty("timeseries", NullValueHandling = NullValueHandling.Ignore)]
-    public bool TimeSeries { get; set; }
+    public bool? TimeSeries { get; set; }
 }

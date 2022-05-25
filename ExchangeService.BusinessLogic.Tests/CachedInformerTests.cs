@@ -1,17 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using ExchangeService.BusinessLogic.BusinessLogic.RequestProcess;
-using ExchangeService.DataAccessLayer;
+﻿using ExchangeService.BusinessLogic.BusinessLogic.RequestProcess;
 using ExchangeService.DataAccessLayer.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using NSubstitute;
 
-namespace ExchangerService.BusinessLogic.Tests
+namespace ExchangeService.BusinessLogic.Tests
 {
     [TestFixture]
     public class CachedInformerTests
@@ -27,10 +21,10 @@ namespace ExchangerService.BusinessLogic.Tests
                 configuration[kv.Key].Returns(kv.Value.ToString());
             }
 
-            var options = new DbContextOptionsBuilder<Context>()
+            var options = new DbContextOptionsBuilder<DataAccessLayer.Context>()
         .UseInMemoryDatabase("Test")
         .Options;
-            var context = new Context(options);
+            var context = new DataAccessLayer.Context(options);
             var repository = new ExchangeHistoryRepository(context);
             var historyService = new HistoryService(repository, configuration);
             var informer = new CacheService(configuration, historyService);

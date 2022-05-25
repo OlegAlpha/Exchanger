@@ -12,18 +12,10 @@ namespace ExchangeService.Controllers;
 [Route("api/[controller]")]
 public class ExchangeController : ControllerBase
 {
-    private const string ApiConfigurationKey = "API_KEY";
-    private const string ApiUrlKey = "API_URL";
-    private const string ApiKeyHeader = "apikey";
+    private readonly IRedirectService _redirect;
 
-    private readonly string _apiKey;
-    private readonly string _apiUrl;
-    private readonly IRedirectRequests _redirect;
-
-    public ExchangeController(IConfiguration configuration, IRedirectRequests redirect)
+    public ExchangeController(IRedirectService redirect)
     {
-        _apiKey = configuration[ApiConfigurationKey];
-        _apiUrl = configuration[ApiUrlKey];
         _redirect = redirect;
     }
 
@@ -31,7 +23,7 @@ public class ExchangeController : ControllerBase
     [Route("exchange")]
     public async Task<string> Exchange(int userId, decimal amount, string from, string to)
     {
-        return await _redirect.ExchageProcess(userId, amount, from, to);
+        return await _redirect.ExchangeProcess(userId, amount, from, to);
     }
 
     [HttpGet]
@@ -57,7 +49,7 @@ public class ExchangeController : ControllerBase
 
     [HttpGet]
     [Route("fluctuation")]
-    public async Task<string> Fluctuation(DateTime start, DateTime end, string baseCurrency, params string[] currencies)
+    public async Task<string> Fluctuation(DateTime start, DateTime end, string? baseCurrency, string[]? currencies)
     {
         return await _redirect.FluctuationProcessing(start, end, baseCurrency, currencies);
     }

@@ -1,7 +1,6 @@
-﻿using System.Reflection;
-using System.Text;
+﻿using System.Text;
 
-namespace ExchangeService
+namespace ExchangeService.BusinessLogic
 {
     internal static class Extensions
     {

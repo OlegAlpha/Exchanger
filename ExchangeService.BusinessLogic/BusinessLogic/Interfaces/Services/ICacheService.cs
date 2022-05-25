@@ -1,7 +1,7 @@
 ﻿using ExchangeService.BusinessLogic.Context;
 using ExchangeService.DataAccessLayer.Entities;
 
-namespace ExchangeService.BusinessLogic.BusinessLogic.RequestProcess;
+namespace ExchangeService.BusinessLogic.BusinessLogic.Interfaces.Services;
 
 public interface ICacheService
 {
@@ -11,5 +11,5 @@ public interface ICacheService
     Response GetExchangeFromCache(int userId, decimal amount, string from, string to);
     bool IsCachedRatesWithin(DateTime startDate, DateTime endDate, string[] currencies, string? @base);
     Task<Response> GetAllRatesInRangeFromCache(DateTime endDate, DateTime startDate, string? @base, string[] currencies);
-    Task<Response> GetCachedFluctuation(string baseCurrency, DateTime start, DateTime end, List<string> cachedCurrencies, Response responseBody);
+    Task<Response> GetCachedFluctuation(string baseCurrency, DateTime start, DateTime end, IEnumerable<string> currencies, Response responseBody);
 }

@@ -10,20 +10,20 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace ExchangeService.BusinessLogic.BusinessLogic.CommonPatterns;
-public class RequestMediator : IRedirectRequests
+public class ServiceMediator : IRedirectService
 {
-    ICacheService _cacheService;
-    IUncacheService _uncacheService;
-    IHistoryService _historyService;
+    private readonly ICacheService _cacheService;
+    private readonly IApiService _apiService;
+    private readonly IHistoryService _historyService;
 
-    public RequestMediator(ICacheService cachedService, IUncacheService uncacheService, IHistoryService historyService)
+    public ServiceMediator(ICacheService cachedService, IApiService apiService, IHistoryService historyService)
     {
         _cacheService = cachedService;
-        _uncacheService = uncacheService;
+        _apiService = apiService;
         _historyService = historyService;
     }
 
-    public async Task<string> ExchageProcess(int userId, decimal amount, string from, string to)
+    public async Task<string> ExchangeProcess(int userId, decimal amount, string from, string to)
     {
         Response responseBody = new();
         try
@@ -34,7 +34,7 @@ public class RequestMediator : IRedirectRequests
             }
             else
             {
-                responseBody = await _uncacheService.ReguestToExchange(userId, amount, from, to);
+                responseBody = await _apiService.RequestToExchange(userId, amount, from, to);
 
 
                 ExchangeRate? exchangeRate = _cacheService.GetExchangeRateOrDefault(from, to);
@@ -70,7 +70,7 @@ public class RequestMediator : IRedirectRequests
         });
         var newSymbols = String.Join(",", toCurrencies);
 
-        Response responseBody = await _uncacheService.GetLatestRatesWithUncachedData(newSymbols, @base, symbols);
+        Response responseBody = await _apiService.GetLatestRatesWithUncachedData(newSymbols, @base, symbols);
 
         foreach (var kv in currencies)
         {
@@ -85,7 +85,7 @@ public class RequestMediator : IRedirectRequests
 
         if (!_cacheService.IsCachedRatesWithin(startDate, endDate, currencies, @base))
         {
-            return await _uncacheService.GetAllRatesInRangeFromServer(endDate, startDate, @base, symbols);
+            return await _apiService.GetAllRatesInRangeFromServer(endDate, startDate, @base, symbols);
         }
 
         Response responseBody = await _cacheService.GetAllRatesInRangeFromCache(endDate, startDate, @base, currencies);
@@ -97,41 +97,49 @@ public class RequestMediator : IRedirectRequests
 
         return JsonConvert.SerializeObject(responseBody);
     }
-    public async Task<string> FluctuationProcessing(DateTime start, DateTime end, string baseCurrency, params string[] currencies)
+    public async Task<string> FluctuationProcessing(DateTime start, DateTime end, string? baseCurrency, string[]? currencies)
     {
-        ExchangeRate? startRate = null;
-        ExchangeRate? endRate = null;
-        List<string> uncahcedCurrencies = new List<string>();
-        List<string> cachedCurrencies = new List<string>();
+        var uncachedCurrencies = new List<string>();
+        var cachedCurrencies = new List<string>();
         Response responseBody;
 
         try
         {
-            foreach (string currency in currencies)
+            if (currencies is not null && baseCurrency is not null)
             {
-
-                if (_cacheService.IsCreatedExchangeRate(baseCurrency, currency, start))
+                foreach (string currency in currencies)
                 {
-                    startRate = _cacheService.GetExchangeRateOrDefault(baseCurrency, currency, start);
-                }
+                    ExchangeRate? startRate = null;
+                    ExchangeRate? endRate = null;
 
-                if (_cacheService.IsCreatedExchangeRate(baseCurrency, currency, end))
-                {
-                    endRate = _cacheService.GetExchangeRateOrDefault(baseCurrency, currency, end);
-                }
+                    if (_cacheService.IsCreatedExchangeRate(baseCurrency, currency, start))
+                    {
+                        startRate = _cacheService.GetExchangeRateOrDefault(baseCurrency, currency, start);
+                    }
 
-                if (startRate is null || endRate is null)
-                {
-                    uncahcedCurrencies.Add(currency);
-                    continue;
-                }
+                    if (_cacheService.IsCreatedExchangeRate(baseCurrency, currency, end))
+                    {
+                        endRate = _cacheService.GetExchangeRateOrDefault(baseCurrency, currency, end);
+                    }
 
-                cachedCurrencies.Add(currency);
+                    if (startRate is null || endRate is null)
+                    {
+                        uncachedCurrencies.Add(currency);
+                        continue;
+                    }
+
+                    cachedCurrencies.Add(currency);
+                }
+            }
+            
+            if (uncachedCurrencies.Count > 0)
+            {
+                responseBody = await _apiService.GetUncachedFluctuation(start, end, baseCurrency, uncachedCurrencies);
             }
 
-            if (uncahcedCurrencies.Count > 0)
+            else if (currencies is null)
             {
-                responseBody = await _uncacheService.GetUncachedFluctuation(start, end, baseCurrency, uncahcedCurrencies);
+                responseBody = await _apiService.GetUncachedFluctuation(start, end, baseCurrency, currencies);
             }
             else
             {
@@ -154,9 +162,9 @@ public class RequestMediator : IRedirectRequests
 
         return JsonConvert.SerializeObject(responseBody);
     }
-    public async Task<string> GetAvailableCurrencies()
+    public async Task<string?> GetAvailableCurrencies()
     {
-        return await _uncacheService.GetAvailableCurrencies();
+        return await _apiService.GetAvailableCurrencies();
     }
 
 }
