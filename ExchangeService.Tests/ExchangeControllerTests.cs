@@ -140,7 +140,7 @@ namespace ExchangeService.Tests
         public void GetLatestRate_BaseUsdEmptySymbols_ReturnsCorrectResponse()
         {
             var controller = GetController();
-            var response = controller.PostLatestRates("USD", null).Result;
+            var response = controller.GetLatestRates("USD", null).Result;
 
             var responseBody = JsonConvert.DeserializeObject<Response>(response);
 
@@ -156,7 +156,7 @@ namespace ExchangeService.Tests
         public void GetAvailableCurrencies_Currencies_ReturnsCorrectResponse()
         {
             var controller = GetController();
-            string response = controller.PostAvailableCurrencies().Result;
+            string response = controller.GetAvailableCurrencies().Result;
             var responseBody = JsonConvert.DeserializeObject<Response>(response);
             var expectedSymbols = new Dictionary<string, object>()
             {
@@ -174,7 +174,7 @@ namespace ExchangeService.Tests
         public void GetRatesWithin_ReturnsCorrectResponse()
         {
             var controller = GetController();
-            var response = controller.PostRatesWithin(
+            var response = controller.GetRatesWithin(
                 _endDate,
                 _startDate,
                 "EUR",

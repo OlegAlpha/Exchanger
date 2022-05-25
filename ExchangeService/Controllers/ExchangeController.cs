@@ -28,21 +28,21 @@ public class ExchangeController : ControllerBase
 
     [HttpGet]
     [Route("latest")]
-    public async Task<string?> PostLatestRates(string? @base, string? symbols)
+    public async Task<string?> GetLatestRates(string? @base, string? symbols)
     {
         return await _redirect.LatestRatesProcess(@base, symbols);
     }
 
     [HttpGet]
     [Route("symbols")]
-    public async Task<string?> PostAvailableCurrencies()
+    public async Task<string?> GetAvailableCurrencies()
     {
         return await _redirect.GetAvailableCurrencies();
     }
 
     [HttpGet]
     [Route("timeseries")]
-    public async Task<string?> PostRatesWithin(DateTime endDate, DateTime startDate, string? @base, string? symbols)
+    public async Task<string?> GetRatesWithin(DateTime endDate, DateTime startDate, string? @base, string? symbols)
     {
         return await _redirect.RatesWithinProcess(endDate, startDate, @base, symbols);
     }
