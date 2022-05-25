@@ -19,7 +19,7 @@ public class ExchangeController : ControllerBase
         _redirect = redirect;
     }
 
-    [HttpGet]
+    [HttpPost]
     [Route("exchange")]
     public async Task<string> PostExchange(int userId, decimal amount, string from, string to)
     {
