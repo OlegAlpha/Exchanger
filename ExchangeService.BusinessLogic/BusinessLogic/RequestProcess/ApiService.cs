@@ -20,7 +20,7 @@ public class ApiService : IApiService
         _apiUrl = configuration[ApiUrlKey];
     }
 
-    public  async Task<string> GetAllRatesInRangeFromServer(DateTime endDate, DateTime startDate, string? @base, string? symbols)
+    public  async Task<string> PostAllRatesInRangeFromServer(DateTime endDate, DateTime startDate, string? @base, string? symbols)
     {
         var urlBuilder = new StringBuilder(_apiUrl)
             .Append($"/timeseries?end_date={endDate.ToString("MM/dd/yyyy")}")
@@ -36,7 +36,7 @@ public class ApiService : IApiService
         var response = await client.ExecuteAsync(request);
         return response.Content;
     }
-    public  async Task<Response> GetLatestRatesWithUncachedData(string newSymbols, string? @base, string? symbols)
+    public  async Task<Response> PostLatestRatesWithUncachedData(string newSymbols, string? @base, string? symbols)
     {
         Response responseBody;
 
@@ -70,7 +70,7 @@ public class ApiService : IApiService
 
         return JsonConvert.DeserializeObject<Response>(response.Content);
     }
-    public async Task<string> GetAvailableCurrencies()
+    public async Task<string> PostAvailableCurrencies()
     {
         var client = new RestClient($"{_apiUrl}/symbols");
         var request = new RestRequest();
@@ -78,7 +78,7 @@ public class ApiService : IApiService
         var response = await client.ExecuteAsync(request);
         return response.Content;
     }
-    public  async Task<Response> RequestToExchange(int userId, decimal amount, string from, string to)
+    public  async Task<Response> PostRequestToExchange(int userId, decimal amount, string from, string to)
     {
         string url = new StringBuilder($"{_apiUrl}/convert?")
                 .Append($"to={to}&")
@@ -97,7 +97,7 @@ public class ApiService : IApiService
 
         return responseBody;
     }
-    public async Task<Response> GetUncachedFluctuation(DateTime start, DateTime end, string? baseCurrency, IEnumerable<string>? currencies)
+    public async Task<Response> PostUncachedFluctuation(DateTime start, DateTime end, string? baseCurrency, IEnumerable<string>? currencies)
     {
         string currenciesRequest = string.Join(',', currencies ?? Enumerable.Empty<string>());
 
